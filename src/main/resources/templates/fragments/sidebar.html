@@ -1,0 +1,18 @@
+<!-- fragments/sidebar.html -->
+<nav class="sidebar" th:fragment="sidebar(groups, functions)">
+	<h3>管理功能</h3>
+	<ul class="menu">
+		<li th:each="group : ${session.groups}">
+			<a href="javascript:void(0);" th:text="${group}"></a>
+			<ul class="submenu">
+				<li th:each="f : ${session.functions}" th:if="${f.groupName == group}">
+					<a th:href="@{${f.url}}" th:text="${f.name}"></a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+
+	<form th:action="@{/logout}" method="post" class="logout-form">
+		<button type="submit">登出</button>
+	</form>
+</nav>

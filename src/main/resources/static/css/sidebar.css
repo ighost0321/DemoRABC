@@ -1,0 +1,107 @@
+.sidebar {
+	width: 220px;
+	background-color: #2d3540;
+	color: #fff;
+	padding: 0;
+	position: relative;
+	min-height: 100vh;
+}
+
+.sidebar h3 {
+	padding: 16px 24px;
+	margin: 0;
+	font-size: 1.3em;
+	background-color: #222834;
+	border-bottom: 1px solid #252a34;
+	letter-spacing: 2px;
+}
+
+.menu {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.menu>li {
+	position: relative;
+	border-bottom: 1px solid #383f47;
+}
+
+.menu>li>a {
+	display: block;
+	color: #fff;
+	text-decoration: none;
+	padding: 16px 24px;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.menu>li>a:hover {
+	background: #49505b;
+}
+
+.submenu {
+	display: none;
+	background: #444b58;
+	position: absolute;
+	left: 100%;
+	top: 0;
+	min-width: 160px;
+	border-radius: 0 8px 8px 0;
+	box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.08);
+	z-index: 999;
+}
+
+.menu>li:hover .submenu {
+	display: block;
+}
+
+.submenu li {
+	border-bottom: 1px solid #555b68;
+}
+
+.submenu li:last-child {
+	border-bottom: none;
+}
+
+.submenu a {
+	display: block;
+	color: #fff;
+	text-decoration: none;
+	padding: 14px 18px;
+	background: #444b58;
+}
+
+.submenu a:hover {
+	background: #5c6475;
+}
+
+.logout-form {
+	position: absolute;
+	bottom: 32px;
+	left: 0;
+	width: 100%;
+	text-align: center;
+}
+
+.logout-form button {
+	width: 80%;
+	background: #e53935;
+	/* 紅底 */
+	color: #fff;
+	/* 白字 */
+	border: none;
+	padding: 12px 0;
+	margin: 0 auto;
+	font-size: 1.2em;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 0.2s;
+	font-weight: bold;
+	letter-spacing: 2px;
+}
+
+.logout-form button:hover {
+	background: #b71c1c;
+	/* 深紅（hover效果） */
+}

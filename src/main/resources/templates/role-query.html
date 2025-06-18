@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>角色查詢</title>
+	<meta charset="UTF-8">
+	<!-- 只需這行即可讓 sidebar 樣式生效 -->
+	<link rel="stylesheet" href="/css/sidebar.css">
+	<style>
+		body {
+			margin: 0;
+			font-family: "Noto Sans", Arial, Helvetica, sans-serif;
+		}
+
+		.container {
+			display: flex;
+			min-height: 100vh;
+		}
+
+		.content {
+			flex: 1;
+			background: #f8f9fb;
+			padding: 36px 48px;
+		}
+
+		.search-bar {
+			padding: 20px;
+			background: #f6f6f6;
+		}
+
+		.result-bar {
+			padding: 20px;
+		}
+
+		table {
+			border-collapse: collapse;
+			width: 100%;
+			background: #fff;
+		}
+
+		th,
+		td {
+			border: 1px solid #ccc;
+			padding: 8px;
+		}
+
+		th {
+			background: #f0f0f0;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<!-- sidebar fragment -->
+		<div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
+		<!-- content -->
+		<main class="content">
+			<div class="search-bar">
+				<form th:action="@{/role-query}" method="get">
+					<input type="text" name="keyword" th:value="${keyword}" placeholder="請輸入角色或功能名稱">
+					<button type="submit">查詢</button>
+				</form>
+			</div>
+			<div class="result-bar">
+				<table>
+					<thead>
+						<tr>
+							<th>角色代碼</th>
+							<th>角色名稱</th>
+							<th>對應功能</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="role : ${roles}">
+							<td th:text="${role.id}"></td>
+							<td th:text="${role.name}"></td>
+							<td>
+								<ul>
+									<li th:each="f : ${role.functions}">
+										<span th:text="${f.name}"></span> 
+									</li>
+								</ul>
+							</td>
+						</tr>
+						<tr th:if="${#lists.isEmpty(roles)}">
+							<td colspan="3" style="text-align:center;color:#888;">查無資料</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</main>
+	</div>
+</body>
+
+</html>

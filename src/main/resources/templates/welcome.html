@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>後台首頁</title>
+    <meta charset="UTF-8">
+    <!-- 只需這行即可讓 sidebar 樣式生效 -->
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: "Noto Sans", Arial, Helvetica, sans-serif;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .content {
+            flex: 1;
+            background: #f8f9fb;
+            padding: 36px 48px;
+        }
+        .welcome-bar {
+            margin-bottom: 36px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- sidebar fragment 共用 -->
+    <div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
+    <!-- Content -->
+    <main class="content">
+        <div class="welcome-bar">
+            <span sec:authorize="isAuthenticated()">
+                歡迎 <span sec:authentication="name"></span> 進入後台！
+            </span>
+        </div>
+        <div>
+            <p>請從左方選單選擇功能</p>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+erDiagram
+    function_group ||--o{ functions : "1:N"
+    functions ||--o{ role_functions : "1:N"
+    roles ||--o{ role_functions : "1:N"
+    users ||--o{ user_roles : "1:N"
+    roles ||--o{ user_roles : "1:N"
+
+    function_group {
+      int id PK
+      varchar name
+    }
+    functions {
+      int id PK
+      varchar code
+      varchar name
+      int group_id FK
+      varchar url
+    }
+    roles {
+      varchar id PK
+      varchar name
+    }
+    users {
+      int id PK
+      varchar username
+      varchar password
+    }
+    user_roles {
+      int user_id PK, FK
+      varchar role_id PK, FK
+    }
+    role_functions {
+      varchar role_id PK, FK
+      int function_id PK, FK
+    }
