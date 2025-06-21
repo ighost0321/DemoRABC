@@ -13,16 +13,34 @@ import com.ighost.demo.service.RoleService;
 
 @Controller
 public class RoleQueryController {
+	@Autowired
+	private RoleService roleService;
 
-    @Autowired
-    private RoleService roleService;
+	@GetMapping("/role-query")
+	public String queryRoles(@RequestParam(value = "keyword", required = false) String keyword,
+			@RequestParam(value = "page", required = false, defaultValue = "1") int page, Model model) {
 
-    @GetMapping("/role-query")
-    public String queryRoles(@RequestParam(required = false) String keyword, Model model) {
-    	List<RoleDto> roles = roleService.findByRoleOrFunction(keyword);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("roles", roles);
-        return "role-query";
-    }
+		int pageSize = 5;
+		int totalRoles = roleService.countByKeyword(keyword);
+		int totalPages = (int) Math.ceil(totalRoles / (double) pageSize);
+
+		// 確保頁碼在範圍內
+		if (page < 1)
+			page = 1;
+		if (page > totalPages && totalPages > 0)
+			page = totalPages;
+
+		List<RoleDto> roles = roleService.findByKeyword(keyword, page, pageSize);
+
+		model.addAttribute("roles", roles);
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", totalPages);
+
+		// 你如果還有 sidebar 參數
+		// model.addAttribute("groups", ...);
+		// model.addAttribute("functions", ...);
+
+		return "role-query"; // 對應 role-query.html Thymeleaf 頁面
+	}
 }
-

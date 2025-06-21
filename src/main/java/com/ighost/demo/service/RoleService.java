@@ -10,11 +10,15 @@ import com.ighost.demo.repo.RoleRepository;
 
 @Service
 public class RoleService {
-    @Autowired
-    private RoleRepository roleRepository;
+	@Autowired
+	private RoleRepository roleRepository;
 
-    public List<RoleDto> findByRoleOrFunction(String keyword) {
-        return roleRepository.findByKeyword(keyword == null || keyword.trim().isEmpty() ? null : keyword.trim());
-    }
+	public List<RoleDto> findByKeyword(String keyword, int page, int pageSize) {
+		int offset = (page - 1) * pageSize;
+		return roleRepository.findByKeyword(keyword, offset, pageSize);
+	}
+
+	public int countByKeyword(String keyword) {
+		return roleRepository.countByKeyword(keyword);
+	}
 }
-
