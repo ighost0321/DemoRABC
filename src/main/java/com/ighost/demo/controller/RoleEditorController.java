@@ -37,22 +37,21 @@ public class RoleEditorController {
 		model.addAttribute("allFunctions", allFunctions);
 
 		if (roleId != null && !roleId.isEmpty()) {
-			// *** 核心修正：接收 RoleDto 或 null ***
-			RoleDto role = roleService.findRoleById(roleId);
-
-			if (role != null) {
-				model.addAttribute("role", role);
-			} else {
-				model.addAttribute("error", "找不到角色代碼：" + roleId);
-				model.addAttribute("role", new RoleDto());
-			}
+			// 處理 Optional<RoleDto>
+			roleService.findRoleById(roleId).ifPresentOrElse(role -> model.addAttribute("role", role), // 找到時執行的 Lambda
+					() -> { // 找不到時執行的 Lambda
+						model.addAttribute("error", "找不到角色代碼：" + roleId);
+						model.addAttribute("role", new RoleDto(null, null, null)); // 傳入一個新的空 RoleDto
+					});
 		} else {
-			model.addAttribute("role", new RoleDto());
+			// 如果沒有 roleId，也傳入一個新的空 RoleDto
+			model.addAttribute("role", new RoleDto(null, null, null));
 		}
 
 		List<FunctionDto> userFunctions = userService.getFunctionsByUsername(principal.getName());
 		List<String> userGroups = userService.getDistinctGroupsByUsername(principal.getName());
 		model.addAttribute("functions", userFunctions);
+
 		model.addAttribute("groups", userGroups);
 
 		return "role-edit";
@@ -64,6 +63,9 @@ public class RoleEditorController {
 			RedirectAttributes redirectAttributes) {
 
 		try {
+			if (roleId == null || roleId.trim().isEmpty()) {
+				throw new IllegalArgumentException("角色代碼不可為空！");
+			}
 			roleService.saveRole(roleId, roleName, functionIds);
 			redirectAttributes.addFlashAttribute("successMessage", "角色 [" + roleName + "] 儲存成功！");
 		} catch (Exception e) {

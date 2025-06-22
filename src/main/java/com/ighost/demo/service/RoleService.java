@@ -38,15 +38,14 @@ public class RoleService {
 	}
 
 	/**
-	 * 根據 ID 查詢單一角色，並轉換為 DTO。 回傳型別改為 RoleDto，找不到則回傳 null，以避免 AOP 代理的泛型問題。
+	 * 根據 ID 查詢單一角色。 回傳 Optional<RoleDto>，這是一種更現代、更安全的 Java 實踐， 能明確向上層呼叫者表示「值可能不存在」。
+	 * * @param roleId 角色 ID
+	 * 
+	 * @return 包含 RoleDto 的 Optional，如果找不到則為空。
 	 */
 	@Transactional(readOnly = true)
-	public RoleDto findRoleById(String roleId) {
-		Optional<Role> roleOptional = roleRepository.findById(roleId);
-		if (roleOptional.isPresent()) {
-			return convertToDto(roleOptional.get());
-		}
-		return null; // 直接回傳 null
+	public Optional<RoleDto> findRoleById(String roleId) {
+		return roleRepository.findById(roleId).map(this::convertToDto);
 	}
 
 	/**
@@ -54,20 +53,19 @@ public class RoleService {
 	 */
 	@Transactional
 	public void saveRole(String roleId, String roleName, List<Integer> functionIds) {
-		// findById 回傳的是 Optional<Role>，我們需要先處理它
 		Role role = roleRepository.findById(roleId).orElse(new Role());
 
 		role.setId(roleId);
 		role.setName(roleName);
 
-		// 使用 HashSet 提高效率並確保唯一性
 		if (functionIds != null && !functionIds.isEmpty()) {
 			List<Function> functions = functionRepository.findAllByIdIn(functionIds);
 			role.setFunctions(new HashSet<>(functions));
 		} else {
-			// 如果沒有傳入任何 functionIds，就清空現有的權限
 			if (role.getFunctions() != null) {
 				role.getFunctions().clear();
+			} else {
+				role.setFunctions(new HashSet<>());
 			}
 		}
 
@@ -75,28 +73,19 @@ public class RoleService {
 	}
 
 	/**
-	 * 將 Role 實體轉換為 RoleDto 的輔助方法。
+	 * 將 Role 實體轉換為 RoleDto Record 的輔助方法。
 	 */
 	private RoleDto convertToDto(Role role) {
-		RoleDto roleDto = new RoleDto();
-		roleDto.setId(role.getId());
-		roleDto.setName(role.getName());
-
+		List<FunctionDto> functionDtos = null;
 		if (role.getFunctions() != null) {
-			List<FunctionDto> functionDtos = role.getFunctions().stream().map(f -> {
-				FunctionDto funcDto = new FunctionDto();
-				funcDto.setId(f.getId());
-				funcDto.setName(f.getName());
-				funcDto.setCode(f.getCode());
-				funcDto.setUrl(f.getUrl());
-				if (f.getGroup() != null) {
-					funcDto.setGroupName(f.getGroup().getName());
-				}
-				return funcDto;
+			functionDtos = role.getFunctions().stream().map(f -> {
+				String groupName = (f.getGroup() != null) ? f.getGroup().getName() : null;
+				// 使用 FunctionDto 的 record 建構子
+				return new FunctionDto(f.getId(), f.getCode(), f.getName(), f.getUrl(), f.getGroup().getId(),
+						groupName);
 			}).collect(Collectors.toList());
-			roleDto.setFunctions(functionDtos);
 		}
-
-		return roleDto;
+		// 使用 RoleDto 的 record 建構子
+		return new RoleDto(role.getId(), role.getName(), functionDtos);
 	}
 }

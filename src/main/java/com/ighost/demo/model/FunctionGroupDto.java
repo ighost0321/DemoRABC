@@ -1,14 +1,6 @@
 package com.ighost.demo.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class FunctionGroupDto {
-    private Integer id;
-    private String name;
-}
-
+/**
+ * 功能群組的資料傳輸物件，改為 Record 以求簡潔。
+ */
+public record FunctionGroupDto(Integer id, String name) {}

@@ -19,38 +19,23 @@ public class FunctionService {
 
 	public List<FunctionDto> searchFunctions(String keyword) {
 		List<Function> functions = functionRepository.findByNameContainingOrCodeContaining(keyword, keyword);
-		return functions.stream().map(f -> {
-			FunctionDto dto = new FunctionDto();
-			dto.setId(f.getId());
-			dto.setCode(f.getCode());
-			dto.setName(f.getName());
-			dto.setUrl(f.getUrl());
-			dto.setGroupId(f.getGroup().getId());
-			dto.setGroupName(f.getGroup().getName());
-			return dto;
-		}).collect(Collectors.toList());
+		return functions.stream().map(this::convertToDto).collect(Collectors.toList());
 	}
 
 	/**
-	 * 查詢系統中所有的功能
-	 * 
-	 * @return 所有功能的列表
+	 * 查詢系統中所有的功能 * @return 所有功能的列表
 	 */
 	public List<FunctionDto> findAllFunctions() {
-		// 直接使用 JpaRepository 內建的 findAll 方法
 		List<Function> functions = functionRepository.findAll();
-		// 使用與 searchFunctions 相同的邏輯將 Entity 轉換為 Dto
-		return functions.stream().map(f -> {
-			FunctionDto dto = new FunctionDto();
-			dto.setId(f.getId());
-			dto.setCode(f.getCode());
-			dto.setName(f.getName());
-			dto.setUrl(f.getUrl());
-			if (f.getGroup() != null) {
-				dto.setGroupId(f.getGroup().getId());
-				dto.setGroupName(f.getGroup().getName());
-			}
-			return dto;
-		}).collect(Collectors.toList());
+		return functions.stream().map(this::convertToDto).collect(Collectors.toList());
+	}
+
+	/**
+	 * 將 Function 實體轉換為 FunctionDto Record。
+	 */
+	private FunctionDto convertToDto(Function f) {
+		Integer groupId = (f.getGroup() != null) ? f.getGroup().getId() : null;
+		String groupName = (f.getGroup() != null) ? f.getGroup().getName() : null;
+		return new FunctionDto(f.getId(), f.getCode(), f.getName(), f.getUrl(), groupId, groupName);
 	}
 }

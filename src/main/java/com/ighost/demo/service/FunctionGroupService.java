@@ -14,14 +14,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FunctionGroupService {
 
-    private final FunctionGroupRepository functionGroupRepository;
+	private final FunctionGroupRepository functionGroupRepository;
 
-    public List<FunctionGroupDto> getAllGroups() {
-        return functionGroupRepository.findAll().stream().map(g -> {
-            FunctionGroupDto dto = new FunctionGroupDto();
-            dto.setId(g.getId());
-            dto.setName(g.getName());
-            return dto;
-        }).collect(Collectors.toList());
-    }
+	public List<FunctionGroupDto> getAllGroups() {
+		return functionGroupRepository.findAll().stream().map(g -> {
+			// 直接使用 record 的建構子
+			return new FunctionGroupDto(g.getId(), g.getName());
+		}).collect(Collectors.toList());
+	}
 }
