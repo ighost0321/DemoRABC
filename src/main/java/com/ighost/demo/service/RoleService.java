@@ -1,12 +1,19 @@
 package com.ighost.demo.service;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional; // 確保匯入 Optional
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.ighost.demo.entity.Function;
+import com.ighost.demo.entity.Role;
+import com.ighost.demo.model.FunctionDto;
 import com.ighost.demo.model.RoleDto;
+import com.ighost.demo.repo.FunctionRepository;
 import com.ighost.demo.repo.RoleRepository;
 
 @Service
@@ -15,48 +22,81 @@ public class RoleService {
 	@Autowired
 	private RoleRepository roleRepository;
 
-	/**
-	 * 根據關鍵字和分頁參數查詢角色列表。
-	 * 
-	 * @param keyword  搜尋關鍵字
-	 * @param page     目前頁碼
-	 * @param pageSize 每頁顯示的筆數
-	 * @return 角色資料傳輸物件列表 (List of RoleDto)
-	 */
+	@Autowired
+	private FunctionRepository functionRepository;
+
+	@Transactional(readOnly = true)
 	public List<RoleDto> findByKeyword(String keyword, int page, int pageSize) {
-		// 根據頁碼和每頁筆數計算資料庫查詢的偏移量 (offset)
 		int offset = (page - 1) * pageSize;
-		return roleRepository.findByKeyword(keyword, offset, pageSize);
+		List<Role> roles = roleRepository.findByKeyword(keyword, offset, pageSize);
+		return roles.stream().map(this::convertToDto).collect(Collectors.toList());
 	}
 
-	/**
-	 * 根據關鍵字計算符合條件的角色總數。
-	 * 
-	 * @param keyword 搜尋關鍵字
-	 * @return 符合條件的角色總數
-	 */
-	public int countByKeyword(String keyword) {
+	@Transactional(readOnly = true)
+	public long countByKeyword(String keyword) {
 		return roleRepository.countByKeyword(keyword);
 	}
 
 	/**
-	 * 根據角色 ID 查找單一角色的完整資訊，包括其擁有的所有功能。 主要用於角色編輯器載入資料。
-	 * 
-	 * @param roleId 要查詢的角色 ID
-	 * @return 一個包含 RoleDto 的 Optional 物件，如果找不到則為空
+	 * 根據 ID 查詢單一角色，並轉換為 DTO。 回傳型別改為 RoleDto，找不到則回傳 null，以避免 AOP 代理的泛型問題。
 	 */
-	public Optional<RoleDto> findRoleById(String roleId) {
-		return roleRepository.findById(roleId);
+	@Transactional(readOnly = true)
+	public RoleDto findRoleById(String roleId) {
+		Optional<Role> roleOptional = roleRepository.findById(roleId);
+		if (roleOptional.isPresent()) {
+			return convertToDto(roleOptional.get());
+		}
+		return null; // 直接回傳 null
 	}
-	
+
 	/**
-     * 呼叫 Repository 層來儲存角色資料。
-     * @param roleId 角色 ID
-     * @param roleName 角色名稱
-     * @param functionIds 功能 ID 列表
-     */
-    public void saveRole(String roleId, String roleName, List<Integer> functionIds) {
-        // Service 層的職責是呼叫 Repository 完成資料庫操作
-        roleRepository.save(roleId, roleName, functionIds);
-    }
+	 * 儲存角色 (新增或更新)。
+	 */
+	@Transactional
+	public void saveRole(String roleId, String roleName, List<Integer> functionIds) {
+		// findById 回傳的是 Optional<Role>，我們需要先處理它
+		Role role = roleRepository.findById(roleId).orElse(new Role());
+
+		role.setId(roleId);
+		role.setName(roleName);
+
+		// 使用 HashSet 提高效率並確保唯一性
+		if (functionIds != null && !functionIds.isEmpty()) {
+			List<Function> functions = functionRepository.findAllByIdIn(functionIds);
+			role.setFunctions(new HashSet<>(functions));
+		} else {
+			// 如果沒有傳入任何 functionIds，就清空現有的權限
+			if (role.getFunctions() != null) {
+				role.getFunctions().clear();
+			}
+		}
+
+		roleRepository.save(role);
+	}
+
+	/**
+	 * 將 Role 實體轉換為 RoleDto 的輔助方法。
+	 */
+	private RoleDto convertToDto(Role role) {
+		RoleDto roleDto = new RoleDto();
+		roleDto.setId(role.getId());
+		roleDto.setName(role.getName());
+
+		if (role.getFunctions() != null) {
+			List<FunctionDto> functionDtos = role.getFunctions().stream().map(f -> {
+				FunctionDto funcDto = new FunctionDto();
+				funcDto.setId(f.getId());
+				funcDto.setName(f.getName());
+				funcDto.setCode(f.getCode());
+				funcDto.setUrl(f.getUrl());
+				if (f.getGroup() != null) {
+					funcDto.setGroupName(f.getGroup().getName());
+				}
+				return funcDto;
+			}).collect(Collectors.toList());
+			roleDto.setFunctions(functionDtos);
+		}
+
+		return roleDto;
+	}
 }
