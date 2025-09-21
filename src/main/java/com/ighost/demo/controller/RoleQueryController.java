@@ -2,6 +2,8 @@ package com.ighost.demo.controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,7 +64,12 @@ public class RoleQueryController {
 
         // 6. 為了讓側邊欄能正確顯示，傳遞使用者權限資料
         List<FunctionDto> userFunctions = userService.getFunctionsByUsername(principal.getName());
-        List<String> userGroups = userService.getDistinctGroupsByUsername(principal.getName());
+        List<String> userGroups = userFunctions.stream()
+                .map(FunctionDto::groupName)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .distinct()
+                .collect(Collectors.toList());
         model.addAttribute("functions", userFunctions);
         model.addAttribute("groups", userGroups);
 

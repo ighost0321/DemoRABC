@@ -36,11 +36,4 @@ public class UserService {
 		}
 		return dtos;
 	}
-
-	// 取得所有功能群組名稱（不重複）
-	public List<String> getDistinctGroupsByUsername(String username) {
-		List<FunctionDto> functions = getFunctionsByUsername(username);
-		return functions.stream().map(FunctionDto::groupName) // 使用 record 的 accessor 方法
-				.filter(Objects::nonNull).distinct().collect(Collectors.toList());
-	}
 }

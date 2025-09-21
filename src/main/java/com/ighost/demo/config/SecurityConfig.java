@@ -20,6 +20,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 允許靜態資源
+                .requestMatchers("/role-edit", "/role-query").hasRole("ADMIN") // 限制角色管理頁面給 ADMIN
                 .anyRequest().authenticated()
             )
             .userDetailsService(userDetailsService) // 用這一行取代 DaoAuthenticationProvider

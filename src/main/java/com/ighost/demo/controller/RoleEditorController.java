@@ -2,6 +2,8 @@ package com.ighost.demo.controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -49,7 +51,12 @@ public class RoleEditorController {
 		}
 
 		List<FunctionDto> userFunctions = userService.getFunctionsByUsername(principal.getName());
-		List<String> userGroups = userService.getDistinctGroupsByUsername(principal.getName());
+		List<String> userGroups = userFunctions.stream()
+				.map(FunctionDto::groupName)
+				.filter(Objects::nonNull)
+				.map(String::trim)
+				.distinct()
+				.collect(Collectors.toList());
 		model.addAttribute("functions", userFunctions);
 
 		model.addAttribute("groups", userGroups);

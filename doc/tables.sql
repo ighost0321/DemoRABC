@@ -44,3 +44,13 @@ CREATE TABLE role_functions (
     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
     FOREIGN KEY (function_id) REFERENCES functions(id) ON DELETE CASCADE
 );
+
+-- 7. 活動日誌 table
+CREATE TABLE activity_log (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    action_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    action_type VARCHAR(50) NOT NULL,
+    action_details VARCHAR(255),
+    ip_address VARCHAR(50)
+);

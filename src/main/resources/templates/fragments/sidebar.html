@@ -5,7 +5,7 @@
 		<li th:each="group : ${session.groups}">
 			<a href="javascript:void(0);" th:text="${group}"></a>
 			<ul class="submenu">
-				<li th:each="f : ${session.functions}" th:if="${f.groupName == group}">
+				<li th:each="f : ${session.functions}" th:if="${f.groupName != null and f.groupName.trim() == group}">
 					<a th:href="@{${f.url}}" th:text="${f.name}"></a>
 				</li>
 			</ul>
