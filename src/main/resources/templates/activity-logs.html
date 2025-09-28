@@ -7,53 +7,49 @@
     <title>活動日誌查詢</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar.css">
     <link th:href="@{/css/activity-logs.css}" rel="stylesheet">
 </head>
 <body>
 
 <div class="sidebar-layout">
-    <!-- Sidebar -->
-    <div th:insert="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
+    <div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
 
-    <!-- Main Content -->
-    <div class="main-content bg-light">
-
-<!-- Main Content -->
-<div class="main-content">
-    <!-- Header -->
-    <div class="page-header">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="mb-0">
-                        <i class="fas fa-chart-line me-3"></i>
-                        活動日誌管理
-                    </h1>
-                    <p class="mb-0 mt-2">追蹤和分析系統使用者活動軌跡</p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <span class="badge bg-light text-dark p-2">
-                        <i class="fas fa-user me-1"></i>
-                        <span sec:authentication="name">管理員</span>
-                    </span>
+    <main class="main-content">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-0">
+                            <i class="fas fa-chart-line me-3"></i>
+                            活動日誌管理
+                        </h1>
+                        <p class="mb-0 mt-2">追蹤和分析系統使用者活動軌跡</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="badge bg-light text-dark p-2">
+                            <i class="fas fa-user me-1"></i>
+                            <span sec:authentication="name">管理員</span>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="container-fluid">
-    <div class="row">
-        <!-- 搜尋區域 -->
-        <div class="col-12">
-            <div class="card search-card mb-4">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="fas fa-search me-2"></i>
-                        查詢條件
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form th:action="@{/admin/logs}" method="get" class="filter-form">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- 搜尋區域 -->
+                <div class="col-12">
+                    <div class="card search-card mb-4">
+                        <div class="card-header border-0">
+                            <h5 class="mb-0">
+                                <i class="fas fa-search me-2"></i>
+                                查詢條件
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/activity-log-query}" method="get" class="filter-form">
                         <div class="row g-3">
                             <div class="col-md-3">
                                 <label class="form-label">使用者名稱</label>
@@ -86,10 +82,10 @@
                                 <button type="submit" class="btn btn-light me-2">
                                     <i class="fas fa-search me-1"></i> 查詢
                                 </button>
-                                <a th:href="@{/admin/logs}" class="btn btn-outline-light me-2">
+                                <a th:href="@{/activity-log-query}" class="btn btn-outline-light me-2">
                                     <i class="fas fa-refresh me-1"></i> 重置
                                 </a>
-                                <a th:href="@{/admin/logs/export(username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}" 
+                                <a th:href="@{/activity-log-query/export(username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}" 
                                    class="btn btn-success">
                                     <i class="fas fa-download me-1"></i> 匯出
                                 </a>
@@ -207,27 +203,28 @@
             <nav>
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:class="${logs.first} ? 'disabled'">
-                        <a class="page-link" th:href="@{/admin/logs(page=${logs.number - 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
+                        <a class="page-link" th:href="@{/activity-log-query(page=${logs.number - 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     </li>
                     
                     <li class="page-item" th:each="i : ${#numbers.sequence(0, logs.totalPages - 1)}"
                         th:class="${i == logs.number} ? 'active'">
-                        <a class="page-link" th:href="@{/admin/logs(page=${i}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}"
+                        <a class="page-link" th:href="@{/activity-log-query(page=${i}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}"
                            th:text="${i + 1}"></a>
                     </li>
                     
                     <li class="page-item" th:class="${logs.last} ? 'disabled'">
-                        <a class="page-link" th:href="@{/admin/logs(page=${logs.number + 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
+                        <a class="page-link" th:href="@{/activity-log-query(page=${logs.number + 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     </li>
                 </ul>
             </nav>
         </div>
-        </div>
     </div>
+</div>
+    </main>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
