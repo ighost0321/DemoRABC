@@ -19,6 +19,15 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
         UserDetails userDetails = (UserDetails) event.getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
         String ipAddress = RequestUtils.getCurrentRequestIpAddress();
-        activityLogService.logActivity(username, "LOGIN", "User logged in successfully", ipAddress);
+        
+        // 修正：使用正確的 6 個參數調用 logActivity
+        activityLogService.logActivity(
+            username,               // username
+            "LOGIN_SUCCESS",        // actionType 
+            "/login",              // requestUrl
+            null,                  // requestParameters
+            ipAddress,             // ipAddress
+            null                   // userAgent (從 ApplicationEvent 無法取得)
+        );
     }
 }

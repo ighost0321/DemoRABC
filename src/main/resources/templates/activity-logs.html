@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活動日誌查詢</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/activity-logs.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="sidebar-layout">
+    <!-- Sidebar -->
+    <div th:insert="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content bg-light">
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-0">
+                        <i class="fas fa-chart-line me-3"></i>
+                        活動日誌管理
+                    </h1>
+                    <p class="mb-0 mt-2">追蹤和分析系統使用者活動軌跡</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-light text-dark p-2">
+                        <i class="fas fa-user me-1"></i>
+                        <span sec:authentication="name">管理員</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+    <div class="row">
+        <!-- 搜尋區域 -->
+        <div class="col-12">
+            <div class="card search-card mb-4">
+                <div class="card-header border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        查詢條件
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/logs}" method="get" class="filter-form">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">使用者名稱</label>
+                                <input type="text" class="form-control" name="username" 
+                                       th:value="${username}" placeholder="輸入使用者名稱">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">操作類型</label>
+                                <select class="form-select" name="actionType">
+                                    <option value="">全部類型</option>
+                                    <option th:each="type : ${actionTypes}" 
+                                            th:value="${type}" 
+                                            th:text="${type}"
+                                            th:selected="${type == actionType}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">開始時間</label>
+                                <input type="datetime-local" class="form-control" name="startDate" 
+                                       th:value="${#temporals.format(startDate, 'yyyy-MM-dd''T''HH:mm')}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">結束時間</label>
+                                <input type="datetime-local" class="form-control" name="endDate" 
+                                       th:value="${#temporals.format(endDate, 'yyyy-MM-dd''T''HH:mm')}">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-light me-2">
+                                    <i class="fas fa-search me-1"></i> 查詢
+                                </button>
+                                <a th:href="@{/admin/logs}" class="btn btn-outline-light me-2">
+                                    <i class="fas fa-refresh me-1"></i> 重置
+                                </a>
+                                <a th:href="@{/admin/logs/export(username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}" 
+                                   class="btn btn-success">
+                                    <i class="fas fa-download me-1"></i> 匯出
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 統計資訊 -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card stats-card text-center p-3">
+                        <h3 class="mb-1" th:text="${logs.totalElements}">0</h3>
+                        <small>總記錄數</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white text-center p-3">
+                        <h3 class="mb-1" th:text="${logs.totalPages}">0</h3>
+                        <small>總頁數</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white text-center p-3">
+                        <h3 class="mb-1" th:text="${logs.size}">0</h3>
+                        <small>每頁筆數</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark text-center p-3">
+                        <h3 class="mb-1" th:text="${logs.number + 1}">1</h3>
+                        <small>目前頁數</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 日誌列表 -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        活動日誌
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div th:if="${logs.empty}" class="text-center p-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">沒有找到符合條件的記錄</h5>
+                    </div>
+                    
+                    <div th:unless="${logs.empty}">
+                        <div class="log-card card m-3" th:each="log : ${logs.content}">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2">
+                                        <span class="action-badge text-white" 
+                                              th:class="|action-badge text-white ${log.actionType == 'LOGIN_SUCCESS' ? 'success-action' : 
+                                                                                    log.actionType == 'LOGIN_FAIL' ? 'danger-action' : 
+                                                                                    log.actionType == 'LOGOUT' ? 'warning-action' : 'info-action'}|"
+                                              th:text="${log.actionType}">
+                                        </span>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <strong th:text="${log.username}">使用者</strong>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <code th:text="${log.requestUrl}">URL</code>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            <span th:text="${log.ipAddress}">IP</span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            <span th:text="${#temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm:ss')}">時間</span>
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- 詳細資訊（可展開） -->
+                                <div th:if="${log.requestParameters != null}" class="mt-3">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" 
+                                            data-bs-toggle="collapse" 
+                                            th:data-bs-target="'#params-' + ${log.id}">
+                                        <i class="fas fa-eye me-1"></i> 查看參數
+                                    </button>
+                                    <div class="collapse mt-2" th:id="'params-' + ${log.id}">
+                                        <div class="json-display" th:text="${log.requestParameters}"></div>
+                                    </div>
+                                </div>
+                                
+                                <div th:if="${log.userAgent != null}" class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-desktop me-1"></i>
+                                        <span th:text="${#strings.abbreviate(log.userAgent, 80)}">瀏覽器</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 分頁 -->
+        <div class="col-12 mt-4" th:if="${logs.totalPages > 1}">
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:class="${logs.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/logs(page=${logs.number - 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, logs.totalPages - 1)}"
+                        th:class="${i == logs.number} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/logs(page=${i}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}"
+                           th:text="${i + 1}"></a>
+                    </li>
+                    
+                    <li class="page-item" th:class="${logs.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/logs(page=${logs.number + 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

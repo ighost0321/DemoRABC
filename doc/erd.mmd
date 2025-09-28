@@ -33,3 +33,13 @@ erDiagram
       varchar role_id PK, FK
       int function_id PK, FK
     }
+    activity_logs {
+      int id PK
+      varchar username
+      varchar action_type
+      varchar request_url
+      text request_parameters
+      varchar ip_address
+      text user_agent
+      timestamp created_at
+    }

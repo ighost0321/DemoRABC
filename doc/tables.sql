@@ -46,11 +46,13 @@ CREATE TABLE role_functions (
 );
 
 -- 7. 活動日誌 table
-CREATE TABLE activity_log (
+CREATE TABLE activity_logs (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL,
-    action_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    action_type VARCHAR(50) NOT NULL,
-    action_details VARCHAR(255),
-    ip_address VARCHAR(50)
+    username VARCHAR(50),
+    action_type VARCHAR(20) NOT NULL, -- LOGIN_SUCCESS, LOGIN_FAIL, FUNCTION_ACCESS
+    request_url VARCHAR(200),
+    request_parameters TEXT, -- JSON 格式儲存輸入資料
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

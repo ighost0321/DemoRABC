@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活動統計分析</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/log-stats.css}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body class="bg-light">
+
+<!-- Sidebar -->
+<div th:insert="~{fragments/sidebar :: sidebar}"></div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Hero Section -->
+    <div class="stats-hero">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold mb-0">
+                        <i class="fas fa-chart-bar me-3"></i>
+                        活動統計儀表板
+                    </h1>
+                    <p class="lead mt-3 mb-0">即時監控系統活動和使用者行為分析</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="dashboard-nav">
+                        <a href="/admin/logs" class="btn btn-light me-2">
+                            <i class="fas fa-list me-1"></i> 日誌查詢
+                        </a>
+                        <button class="btn btn-outline-light" onclick="refreshStats()">
+                            <i class="fas fa-refresh me-1"></i> 重新整理
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+    
+    <!-- 關鍵指標卡片 -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card metric-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon gradient-bg-1 mx-auto mb-3">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h2 class="fw-bold text-primary mb-1">1,247</h2>
+                    <p class="text-muted mb-2">總使用者數</p>
+                    <small class="badge bg-success">
+                        <i class="fas fa-arrow-up"></i> +12% 本月
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card metric-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon gradient-bg-2 mx-auto mb-3">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <h2 class="fw-bold text-danger mb-1">342</h2>
+                    <p class="text-muted mb-2">今日登入次數</p>
+                    <small class="badge bg-info">
+                        <i class="fas fa-clock"></i> 即時更新
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card metric-card h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon gradient-bg-3 mx-auto mb-3">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2 class="fw-bold text-warning mb-1">23</h2>
+                    <p class="text-muted mb-2">登入失敗次數</p>
+                    <small class="badge bg-warning text-dark">
+                        <i class="fas fa-shield-alt"></i> 需注意
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圖表區域 -->
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    7天活動趨勢
+                </h5>
+                <canvas id="activityChart" height="100"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-chart-pie text-success me-2"></i>
+                    操作類型分佈
+                </h5>
+                <canvas id="actionTypeChart" height="100"></canvas>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- 即時活動 -->
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-clock text-info me-2"></i>
+                    最近活動
+                </h5>
+                <div class="recent-activity">
+                    <div class="activity-timeline">
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">admin 登入成功</h6>
+                                    <small class="text-muted">192.168.1.100</small>
+                                </div>
+                                <small class="text-muted">2分鐘前</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">user01 存取報表功能</h6>
+                                    <small class="text-muted">/reports/view</small>
+                                </div>
+                                <small class="text-muted">5分鐘前</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 text-danger">user02 登入失敗</h6>
+                                    <small class="text-muted">10.0.0.25</small>
+                                </div>
+                                <small class="text-muted">8分鐘前</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">manager 資料修改</h6>
+                                    <small class="text-muted">/admin/users/edit</small>
+                                </div>
+                                <small class="text-muted">12分鐘前</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">user03 登出</h6>
+                                    <small class="text-muted">session ended</small>
+                                </div>
+                                <small class="text-muted">15分鐘前</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 熱門功能 -->
+            <div class="chart-container">
+                <h5 class="mb-4">
+                    <i class="fas fa-fire text-danger me-2"></i>
+                    熱門功能
+                </h5>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span>使用者管理</span>
+                        <span class="badge bg-primary rounded-pill">245</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span>報表查詢</span>
+                        <span class="badge bg-primary rounded-pill">183</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span>系統設定</span>
+                        <span class="badge bg-primary rounded-pill">127</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span>權限管理</span>
+                        <span class="badge bg-primary rounded-pill">89</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 安全警報 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-warning border-0 rounded-3" style="background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="metric-icon gradient-bg-5 me-3">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-2">安全提醒</h5>
+                        <p class="mb-0">偵測到來自 IP 192.168.1.50 的多次登入失敗嘗試，建議檢查是否為異常行為。</p>
+                    </div>
+                    <button class="btn btn-dark">查看詳情</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+</div>
+
+<script>
+// 活動趨勢圖表
+const activityCtx = document.getElementById('activityChart').getContext('2d');
+const activityChart = new Chart(activityCtx, {
+    type: 'line',
+    data: {
+        labels: ['週一', '週二', '週三', '週四', '週五', '週六', '週日'],
+        datasets: [{
+            label: '登入成功',
+            data: [45, 52, 38, 67, 73, 42, 35],
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: '功能存取',
+            data: [125, 143, 98, 167, 189, 112, 87],
+            borderColor: '#764ba2',
+            backgroundColor: 'rgba(118, 75, 162, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// 操作類型分佈圖表
+const actionCtx = document.getElementById('actionTypeChart').getContext('2d');
+const actionChart = new Chart(actionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['登入成功', '功能存取', '資料修改', '登出', '登入失敗'],
+        datasets: [{
+            data: [342, 856, 234, 298, 23],
+            backgroundColor: [
+                '#667eea',
+                '#764ba2',
+                '#f093fb',
+                '#4facfe',
+                '#f5576c'
+            ],
+            borderWidth:
