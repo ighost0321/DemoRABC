@@ -1,6 +1,8 @@
 package com.ighost.demo.controller;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.ighost.demo.entity.ActivityLog;
 import com.ighost.demo.service.ActivityLogService;
@@ -21,9 +24,13 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/activity-log-query")
 @RequiredArgsConstructor
 public class ActivityLogController {
-    
+
+    private static final String VIEW_ACTIVITY_LOGS = "activity-logs";
+    private static final String VIEW_STATS = "log-stats";
+    private static final String ACTION_DATA_MODIFICATION = "DATA_MODIFICATION";
+
     private final ActivityLogService activityLogService;
-    
+
     /**
      * 顯示活動日誌查詢頁面
      */
@@ -39,27 +46,24 @@ public class ActivityLogController {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<ActivityLog> logs = activityLogService.getActivityLogs(username, actionType, startDate, endDate, pageable);
-        
+
         model.addAttribute("logs", logs);
         model.addAttribute("username", username);
         model.addAttribute("actionType", actionType);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
-        
-        // 提供操作類型選項
-        model.addAttribute("actionTypes", new String[]{
-            ActivityLog.LOGIN_SUCCESS, 
-            ActivityLog.LOGIN_FAIL, 
-            ActivityLog.FUNCTION_ACCESS, 
-            ActivityLog.LOGOUT,
-            "DATA_MODIFICATION"
-        });
-        
-        // 為 sidebar 提供必要的參數
-        model.addAttribute("groups", new java.util.ArrayList<>());
-        model.addAttribute("functions", new java.util.ArrayList<>());
-        
-        return "activity-logs";
+
+        model.addAttribute("actionTypes", List.of(
+                ActivityLog.LOGIN_SUCCESS,
+                ActivityLog.LOGIN_FAIL,
+                ActivityLog.FUNCTION_ACCESS,
+                ActivityLog.LOGOUT,
+                ACTION_DATA_MODIFICATION));
+
+        model.addAttribute("groups", Collections.emptyList());
+        model.addAttribute("functions", Collections.emptyList());
+
+        return VIEW_ACTIVITY_LOGS;
     }
     
     /**
@@ -73,10 +77,21 @@ public class ActivityLogController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             Model model) {
         
-        // 這裡可以實作 CSV 導出邏輯
-        // 為了簡化，先重導向到查詢頁面
-        return "redirect:/activity-log-query?username=" + (username != null ? username : "") +
-               "&actionType=" + (actionType != null ? actionType : "");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/activity-log-query");
+        if (username != null && !username.isBlank()) {
+            builder.queryParam("username", username);
+        }
+        if (actionType != null && !actionType.isBlank()) {
+            builder.queryParam("actionType", actionType);
+        }
+        if (startDate != null) {
+            builder.queryParam("startDate", startDate);
+        }
+        if (endDate != null) {
+            builder.queryParam("endDate", endDate);
+        }
+
+        return "redirect:" + builder.toUriString();
     }
     
     /**
@@ -84,8 +99,6 @@ public class ActivityLogController {
      */
     @GetMapping("/stats")
     public String showStats(Model model) {
-        // 這裡可以加入各種統計資訊
-        // 例如：每日登入數、功能使用統計等
-        return "log-stats";
+        return VIEW_STATS;
     }
 }

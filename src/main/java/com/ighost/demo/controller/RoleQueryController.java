@@ -2,13 +2,11 @@ package com.ighost.demo.controller;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -23,56 +21,63 @@ import com.ighost.demo.service.UserService;
 @Controller
 public class RoleQueryController {
 
-	@Autowired
-	private RoleService roleService;
+    private final RoleService roleService;
+    private final UserService userService;
+    private final int pageSize;
 
-    @Autowired
-    private UserService userService;
+    public RoleQueryController(RoleService roleService,
+            UserService userService,
+            @Value("${custom.pagination.page-size}") int pageSize) {
+        this.roleService = roleService;
+        this.userService = userService;
+        this.pageSize = pageSize;
+    }
 
-    // 從 application.yaml 讀取每頁顯示的筆數
-    @Value("${custom.pagination.page-size}")
-    private int pageSize;
+    @GetMapping("/role-query")
+    public String queryRoles(@RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            Model model,
+            Principal principal) {
 
-	@GetMapping("/role-query")
-	public String queryRoles(@RequestParam(value = "keyword", required = false) String keyword,
-			                 @RequestParam(value = "page", defaultValue = "1") int page,
-			                 Model model,
-                             Principal principal) {
+        long totalRoles = roleService.countByKeyword(keyword);
+        int totalPages = calculateTotalPages(totalRoles);
+        int currentPage = clampPage(page, totalPages);
 
-		// 1. 取得符合條件的角色總數 (回傳型別從 int 變為 long)
-		long totalRoles = roleService.countByKeyword(keyword);
-		
-        // 2. 使用 long 型別的 totalRoles 來計算總頁數，避免型別轉換問題
-		int totalPages = (int) Math.ceil((double) totalRoles / pageSize);
+        List<RoleDto> roles = roleService.findByKeyword(keyword, currentPage, pageSize);
 
-		// 3. 確保頁碼在有效範圍內
-		if (page < 1) {
-			page = 1;
-        }
-		if (page > totalPages && totalPages > 0) {
-			page = totalPages;
-        }
+        model.addAttribute("roles", roles);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("totalPages", totalPages);
 
-		// 4. 呼叫 Service 層取得當前頁面的角色資料
-		List<RoleDto> roles = roleService.findByKeyword(keyword, page, pageSize);
-
-		// 5. 將所有需要的資料加入到 Model 中，供前端樣板使用
-		model.addAttribute("roles", roles);
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("currentPage", page);
-		model.addAttribute("totalPages", totalPages);
-
-        // 6. 為了讓側邊欄能正確顯示，傳遞使用者權限資料
         List<FunctionDto> userFunctions = userService.getFunctionsByUsername(principal.getName());
-        List<String> userGroups = userFunctions.stream()
+        model.addAttribute("functions", userFunctions);
+        model.addAttribute("groups", extractGroups(userFunctions));
+
+        return "role-query";
+    }
+
+    private int calculateTotalPages(long totalRoles) {
+        if (totalRoles <= 0) {
+            return 0;
+        }
+        return (int) Math.ceil((double) totalRoles / pageSize);
+    }
+
+    private int clampPage(int requestedPage, int totalPages) {
+        int sanitizedPage = Math.max(requestedPage, 1);
+        if (totalPages > 0) {
+            sanitizedPage = Math.min(sanitizedPage, totalPages);
+        }
+        return sanitizedPage;
+    }
+
+    private List<String> extractGroups(List<FunctionDto> functions) {
+        return functions.stream()
                 .map(FunctionDto::groupName)
-                .filter(Objects::nonNull)
+                .filter(StringUtils::hasText)
                 .map(String::trim)
                 .distinct()
-                .collect(Collectors.toList());
-        model.addAttribute("functions", userFunctions);
-        model.addAttribute("groups", userGroups);
-
-		return "role-query";
-	}
+                .toList();
+    }
 }

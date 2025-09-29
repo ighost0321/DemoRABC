@@ -2,16 +2,15 @@ package com.ighost.demo.controller;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.ighost.demo.model.FunctionDto;
 import com.ighost.demo.model.RoleDto;
@@ -19,66 +18,76 @@ import com.ighost.demo.service.FunctionService;
 import com.ighost.demo.service.RoleService;
 import com.ighost.demo.service.UserService;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
+@RequiredArgsConstructor
 public class RoleEditorController {
 
-	@Autowired
-	private RoleService roleService;
+    private static final String ROLE_EDIT_VIEW = "role-edit";
+    private static final String SUCCESS_MESSAGE_KEY = "successMessage";
+    private static final String ERROR_MESSAGE_KEY = "errorMessage";
 
-	@Autowired
-	private FunctionService functionService;
+    private final RoleService roleService;
+    private final FunctionService functionService;
+    private final UserService userService;
 
-	@Autowired
-	private UserService userService;
+    @GetMapping("/role-edit")
+    public String showRoleEditor(@RequestParam(name = "roleId", required = false) String roleId,
+            Model model,
+            Principal principal) {
 
-	@GetMapping("/role-edit")
-	public String showRoleEditor(@RequestParam(name = "roleId", required = false) String roleId, Model model,
-			Principal principal) {
+        model.addAttribute("allFunctions", functionService.findAllFunctions());
 
-		List<FunctionDto> allFunctions = functionService.findAllFunctions();
-		model.addAttribute("allFunctions", allFunctions);
+        if (StringUtils.hasText(roleId)) {
+            roleService.findRoleById(roleId)
+                    .ifPresentOrElse(role -> model.addAttribute("role", role), () -> {
+                        model.addAttribute("error", "找不到角色代碼：" + roleId);
+                        model.addAttribute("role", createEmptyRoleDto());
+                    });
+        } else {
+            model.addAttribute("role", createEmptyRoleDto());
+        }
 
-		if (roleId != null && !roleId.isEmpty()) {
-			// 處理 Optional<RoleDto>
-			roleService.findRoleById(roleId).ifPresentOrElse(role -> model.addAttribute("role", role), // 找到時執行的 Lambda
-					() -> { // 找不到時執行的 Lambda
-						model.addAttribute("error", "找不到角色代碼：" + roleId);
-						model.addAttribute("role", new RoleDto(null, null, null)); // 傳入一個新的空 RoleDto
-					});
-		} else {
-			// 如果沒有 roleId，也傳入一個新的空 RoleDto
-			model.addAttribute("role", new RoleDto(null, null, null));
-		}
+        List<FunctionDto> userFunctions = userService.getFunctionsByUsername(principal.getName());
+        model.addAttribute("functions", userFunctions);
+        model.addAttribute("groups", extractGroups(userFunctions));
 
-		List<FunctionDto> userFunctions = userService.getFunctionsByUsername(principal.getName());
-		List<String> userGroups = userFunctions.stream()
-				.map(FunctionDto::groupName)
-				.filter(Objects::nonNull)
-				.map(String::trim)
-				.distinct()
-				.collect(Collectors.toList());
-		model.addAttribute("functions", userFunctions);
+        return ROLE_EDIT_VIEW;
+    }
 
-		model.addAttribute("groups", userGroups);
+    @PostMapping("/role-edit")
+    public String handleSaveRole(@RequestParam("id") String roleId,
+            @RequestParam("name") String roleName,
+            @RequestParam(name = "functionIds", required = false) List<Integer> functionIds,
+            RedirectAttributes redirectAttributes) {
 
-		return "role-edit";
-	}
+        try {
+            if (!StringUtils.hasText(roleId)) {
+                throw new IllegalArgumentException("角色代碼不可為空！");
+            }
+            roleService.saveRole(roleId, roleName, functionIds);
+            redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "角色 [" + roleName + "] 儲存成功！");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_KEY, "儲存失敗：" + e.getMessage());
+        }
 
-	@PostMapping("/role-edit")
-	public String handleSaveRole(@RequestParam("id") String roleId, @RequestParam("name") String roleName,
-			@RequestParam(name = "functionIds", required = false) List<Integer> functionIds,
-			RedirectAttributes redirectAttributes) {
+        String redirectUrl = UriComponentsBuilder.fromPath("/role-edit")
+                .queryParam("roleId", roleId)
+                .toUriString();
+        return "redirect:" + redirectUrl;
+    }
 
-		try {
-			if (roleId == null || roleId.trim().isEmpty()) {
-				throw new IllegalArgumentException("角色代碼不可為空！");
-			}
-			roleService.saveRole(roleId, roleName, functionIds);
-			redirectAttributes.addFlashAttribute("successMessage", "角色 [" + roleName + "] 儲存成功！");
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("errorMessage", "儲存失敗：" + e.getMessage());
-		}
+    private List<String> extractGroups(List<FunctionDto> functions) {
+        return functions.stream()
+                .map(FunctionDto::groupName)
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .distinct()
+                .toList();
+    }
 
-		return "redirect:/role-edit?roleId=" + roleId;
-	}
+    private RoleDto createEmptyRoleDto() {
+        return new RoleDto(null, null, null);
+    }
 }

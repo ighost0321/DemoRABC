@@ -1,6 +1,7 @@
 package com.ighost.demo.config;
 
-import com.ighost.demo.service.ActivityLogService;
+import java.io.IOException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,7 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import com.ighost.demo.service.ActivityLogService;
 
 /**
  * 登出成功處理器
@@ -17,21 +18,21 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
-    
+
+    private static final String LOGOUT_REDIRECT_URL = "/login?logout=true";
+
     private final ActivityLogService activityLogService;
-    
+
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, 
-                               HttpServletResponse response, 
-                               Authentication authentication) throws IOException, ServletException {
-        
-        // 記錄登出
+    public void onLogoutSuccess(HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication) throws IOException, ServletException {
+
         if (authentication != null) {
             String username = authentication.getName();
             activityLogService.logLogout(username, request);
         }
-        
-        // 導向登入頁面
-        response.sendRedirect("/login?logout=true");
+
+        response.sendRedirect(LOGOUT_REDIRECT_URL);
     }
 }

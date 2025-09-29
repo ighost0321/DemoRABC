@@ -1,6 +1,7 @@
 package com.ighost.demo.config;
 
-import com.ighost.demo.service.ActivityLogService;
+import java.io.IOException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,7 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import com.ighost.demo.service.ActivityLogService;
 
 /**
  * 登入失敗處理器
@@ -17,28 +18,29 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationFailureHandler implements AuthenticationFailureHandler {
-    
+
+    private static final int MAX_FAILURE_ATTEMPTS = 5;
+    private static final int FAILURE_WINDOW_MINUTES = 15;
+    private static final String ACCOUNT_LOCKED_URL = "/login?error=account_locked";
+    private static final String GENERIC_LOGIN_ERROR_URL = "/login?error=true";
+
     private final ActivityLogService activityLogService;
-    
+
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request, 
-                                       HttpServletResponse response, 
-                                       AuthenticationException exception) throws IOException, ServletException {
-        
-        // 記錄登入失敗
+    public void onAuthenticationFailure(HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException exception) throws IOException, ServletException {
+
         String username = request.getParameter("username");
         if (username != null) {
             activityLogService.logLoginFailure(username, request);
-            
-            // 檢查是否超過失敗次數限制
-            if (activityLogService.isLoginFailureExceeded(username, 5, 15)) {
-                // 可以在這裡實作帳號鎖定邏輯
-                response.sendRedirect("/login?error=account_locked");
+
+            if (activityLogService.isLoginFailureExceeded(username, MAX_FAILURE_ATTEMPTS, FAILURE_WINDOW_MINUTES)) {
+                response.sendRedirect(ACCOUNT_LOCKED_URL);
                 return;
             }
         }
-        
-        // 導向登入頁面並顯示錯誤訊息
-        response.sendRedirect("/login?error=true");
+
+        response.sendRedirect(GENERIC_LOGIN_ERROR_URL);
     }
 }
