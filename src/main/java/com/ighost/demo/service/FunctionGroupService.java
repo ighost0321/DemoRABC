@@ -1,7 +1,6 @@
 package com.ighost.demo.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -14,12 +13,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FunctionGroupService {
 
-	private final FunctionGroupRepository functionGroupRepository;
+    private final FunctionGroupRepository functionGroupRepository;
 
-	public List<FunctionGroupDto> getAllGroups() {
-		return functionGroupRepository.findAll().stream().map(g -> {
-			// 直接使用 record 的建構子
-			return new FunctionGroupDto(g.getId(), g.getName());
-		}).collect(Collectors.toList());
-	}
+    public List<FunctionGroupDto> getAllGroups() {
+        return functionGroupRepository.findAll().stream()
+                .map(group -> new FunctionGroupDto(group.getId(), group.getName()))
+                .toList();
+    }
 }
