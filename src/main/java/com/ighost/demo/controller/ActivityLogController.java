@@ -74,8 +74,7 @@ public class ActivityLogController {
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String actionType,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-            Model model) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/activity-log-query");
         if (username != null && !username.isBlank()) {
@@ -98,7 +97,7 @@ public class ActivityLogController {
      * 系統統計頁面
      */
     @GetMapping("/stats")
-    public String showStats(Model model) {
+    public String showStats() {
         return VIEW_STATS;
     }
 }

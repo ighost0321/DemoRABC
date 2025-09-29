@@ -10,20 +10,29 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "roles")
 public class Role {
 
     @Id
     @Column(length = 20)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private String id;
 
     @Column(name = "name", nullable = false)
+    @ToString.Include
     private String name;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -34,4 +43,3 @@ public class Role {
     )
     private Set<Function> functions;
 }
-
