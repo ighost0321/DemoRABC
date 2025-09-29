@@ -157,24 +157,6 @@
     font-weight: 500;
 }
 
-/* 分頁樣式 */
-.pagination {
-    justify-content: center;
-    margin-top: 2rem;
-}
-
-.pagination .page-link {
-    color: #007bff;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    margin: 0 2px;
-}
-
-.pagination .page-item.active .page-link {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
 /* 響應式調整 */
 @media (max-width: 768px) {
     .sidebar-layout {
