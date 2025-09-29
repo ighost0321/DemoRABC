@@ -20,68 +20,65 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
-/**
- * RoleQueryRepository 的實作類別。 Spring Data JPA 會自動找到這個實作並與主 Repository 介面整合。
- */
 @Repository
 public class RoleQueryRepositoryImpl implements RoleQueryRepository {
 
-	@PersistenceContext
-	private EntityManager em;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-	@Override
-	public List<Role> findByKeyword(String keyword, int offset, int pageSize) {
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<Role> cq = cb.createQuery(Role.class);
-		Root<Role> role = cq.from(Role.class);
+    @Override
+    public List<Role> findByKeyword(String keyword, int offset, int pageSize) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Role> query = builder.createQuery(Role.class);
+        Root<Role> role = query.from(Role.class);
 
-		Predicate predicate = createKeywordPredicate(cb, role, keyword);
-		if (predicate != null) {
-			cq.where(predicate);
-		}
+        Predicate predicate = createKeywordPredicate(builder, role, keyword);
+        if (predicate != null) {
+            query.where(predicate);
+        }
 
-		cq.select(role).distinct(true).orderBy(cb.asc(role.get("id")));
+        query.select(role)
+                .distinct(true)
+                .orderBy(builder.asc(role.get("id")));
 
-		TypedQuery<Role> query = em.createQuery(cq);
-		query.setFirstResult(offset);
-		query.setMaxResults(pageSize);
+        TypedQuery<Role> typedQuery = entityManager.createQuery(query);
+        typedQuery.setFirstResult(offset);
+        typedQuery.setMaxResults(pageSize);
+        return typedQuery.getResultList();
+    }
 
-		return query.getResultList();
-	}
+    @Override
+    public long countByKeyword(String keyword) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = builder.createQuery(Long.class);
+        Root<Role> role = query.from(Role.class);
 
-	@Override
-	public long countByKeyword(String keyword) {
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<Long> cq = cb.createQuery(Long.class);
-		Root<Role> role = cq.from(Role.class);
+        Predicate predicate = createKeywordPredicate(builder, role, keyword);
+        if (predicate != null) {
+            query.where(predicate);
+        }
 
-		Predicate predicate = createKeywordPredicate(cb, role, keyword);
-		if (predicate != null) {
-			cq.where(predicate);
-		}
+        query.select(builder.countDistinct(role));
+        return entityManager.createQuery(query).getSingleResult();
+    }
 
-		cq.select(cb.countDistinct(role));
+    private Predicate createKeywordPredicate(CriteriaBuilder builder, Root<Role> role, String keyword) {
+        if (!StringUtils.hasText(keyword)) {
+            return null;
+        }
 
-		return em.createQuery(cq).getSingleResult();
-	}
+        String pattern = "%" + keyword.toLowerCase() + "%";
 
-	private Predicate createKeywordPredicate(CriteriaBuilder cb, Root<Role> role, String keyword) {
-		if (!StringUtils.hasText(keyword)) {
-			return null;
-		}
+        Join<Role, Function> functionJoin = role.join("functions", JoinType.LEFT);
+        Join<Function, FunctionGroup> groupJoin = functionJoin.join("group", JoinType.LEFT);
 
-		String kwPattern = "%" + keyword.toLowerCase() + "%";
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(builder.like(builder.lower(role.get("id")), pattern));
+        predicates.add(builder.like(builder.lower(role.get("name")), pattern));
+        predicates.add(builder.like(builder.lower(functionJoin.get("name")), pattern));
+        predicates.add(builder.like(builder.lower(functionJoin.get("code")), pattern));
+        predicates.add(builder.like(builder.lower(groupJoin.get("name")), pattern));
 
-		Join<Role, Function> functionJoin = role.join("functions", JoinType.LEFT);
-		Join<Function, FunctionGroup> groupJoin = functionJoin.join("group", JoinType.LEFT);
-
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(cb.like(cb.lower(role.get("id")), kwPattern));
-		predicates.add(cb.like(cb.lower(role.get("name")), kwPattern));
-		predicates.add(cb.like(cb.lower(functionJoin.get("name")), kwPattern));
-		predicates.add(cb.like(cb.lower(functionJoin.get("code")), kwPattern));
-		predicates.add(cb.like(cb.lower(groupJoin.get("name")), kwPattern));
-
-		return cb.or(predicates.toArray(new Predicate[0]));
-	}
+        return builder.or(predicates.toArray(new Predicate[0]));
+    }
 }
