@@ -83,9 +83,9 @@
                                 <button type="submit" class="btn btn-light me-2">
                                     <i class="fas fa-search me-1"></i> 查詢
                                 </button>
-                                <a th:href="@{/activity-log-query}" class="btn btn-outline-light me-2">
+                                <button type="button" class="btn btn-outline-secondary me-2" id="reset-filters">
                                     <i class="fas fa-refresh me-1"></i> 重置
-                                </a>
+                                </button>
                                 <a th:href="@{/activity-log-query/export(username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}" 
                                    class="btn btn-success">
                                     <i class="fas fa-download me-1"></i> 匯出
@@ -93,36 +93,6 @@
                             </div>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 統計資訊 -->
-        <div class="col-12 mb-4">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card stats-card text-center p-3">
-                        <h3 class="mb-1" th:text="${logs.totalElements}">0</h3>
-                        <small>總記錄數</small>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-success text-white text-center p-3">
-                        <h3 class="mb-1" th:text="${logs.totalPages}">0</h3>
-                        <small>總頁數</small>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-info text-white text-center p-3">
-                        <h3 class="mb-1" th:text="${logs.size}">0</h3>
-                        <small>每頁筆數</small>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-warning text-dark text-center p-3">
-                        <h3 class="mb-1" th:text="${logs.number + 1}">1</h3>
-                        <small>目前頁數</small>
-                    </div>
                 </div>
             </div>
         </div>
@@ -203,19 +173,20 @@
         <div class="col-12 mt-4" th:if="${logs.totalPages > 1}">
             <nav>
                 <ul class="pagination justify-content-center">
-                    <li class="page-item" th:class="${logs.first} ? 'disabled'">
+                    <li class="page-item" th:classappend="${logs.first} ? ' disabled'">
                         <a class="page-link" th:href="@{/activity-log-query(page=${logs.number - 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     </li>
                     
                     <li class="page-item" th:each="i : ${#numbers.sequence(0, logs.totalPages - 1)}"
-                        th:class="${i == logs.number} ? 'active'">
-                        <a class="page-link" th:href="@{/activity-log-query(page=${i}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}"
+                        th:classappend="${i == logs.number} ? ' active'">
+                        <span class="page-link" th:if="${i == logs.number}" th:text="${i + 1}"></span>
+                        <a class="page-link" th:if="${i != logs.number}" th:href="@{/activity-log-query(page=${i}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}"
                            th:text="${i + 1}"></a>
                     </li>
                     
-                    <li class="page-item" th:class="${logs.last} ? 'disabled'">
+                    <li class="page-item" th:classappend="${logs.last} ? ' disabled'">
                         <a class="page-link" th:href="@{/activity-log-query(page=${logs.number + 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
                             <i class="fas fa-chevron-right"></i>
                         </a>
@@ -229,5 +200,36 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    (function() {
+        const resetButton = document.getElementById('reset-filters');
+        if (!resetButton) {
+            return;
+        }
+
+        resetButton.disabled = false;
+        resetButton.classList.remove('disabled');
+        resetButton.style.pointerEvents = 'auto';
+
+        resetButton.addEventListener('click', function () {
+            const form = this.closest('form');
+            if (!form) {
+                window.location.href = '/activity-log-query';
+                return;
+            }
+
+            Array.from(form.elements).forEach(element => {
+                if (element.name === 'username' || element.name === 'actionType') {
+                    element.value = '';
+                }
+                if (element.type === 'datetime-local') {
+                    element.value = '';
+                }
+            });
+
+            form.submit();
+        });
+    })();
+</script>
 </body>
 </html>

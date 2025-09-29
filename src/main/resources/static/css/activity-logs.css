@@ -50,25 +50,6 @@
     padding: 0;
 }
 
-/* 統計卡片區域 */
-.stats-row {
-    margin-bottom: 2rem;
-}
-
-.stats-card {
-    border-radius: 8px;
-    padding: 1.5rem;
-    text-align: center;
-    color: white;
-    border: none;
-}
-
-/* 不同顏色的統計卡片 */
-.stats-card-1 { background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); }
-.stats-card-2 { background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%); }
-.stats-card-3 { background: linear-gradient(45deg, #43e97b 0%, #38f9d7 100%); }
-.stats-card-4 { background: linear-gradient(45deg, #fa709a 0%, #fee140 100%); }
-
 /* 活動日誌區域 */
 .logs-section {
     background: white;
@@ -173,10 +154,6 @@
     
     .page-header {
         padding: 1rem 0;
-    }
-    
-    .stats-card {
-        margin-bottom: 1rem;
     }
     
     .log-card {
