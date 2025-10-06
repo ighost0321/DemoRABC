@@ -1,159 +1,304 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant" xml:lang="zh-Hant">
 <head>
-    <title>角色編輯器</title>
+    <title>角色編輯</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/css/sidebar.css">
     <style>
-        /* 樣式開始 */
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-        }
-        body {
             font-family: "Noto Sans", Arial, Helvetica, sans-serif;
             background: #f8f9fb;
-            height: 100vh;
         }
         .container {
             display: flex;
             min-height: 100vh;
-            height: 100vh;
         }
         .content {
             flex: 1;
-            background: #f8f9fb;
             padding: 36px 48px;
-            overflow-x: auto;
+            background: #f8f9fb;
         }
-        .editor-form {
-            padding: 20px;
+        .panel {
             background: #fff;
             border-radius: 8px;
             border: 1px solid #ddd;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
-        }
-        .form-group input[type="text"] {
-            width: 300px;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        .query-section {
+            padding: 24px;
             display: flex;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            flex-direction: column;
+            gap: 24px;
         }
-        .query-section button, .main-actions button {
+        .alert {
+            padding: 10px 14px;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .search-form {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .search-form label {
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .search-form input[type="text"] {
+            width: 320px;
+            padding: 10px 12px;
+            border: 1px solid #e0a15a;
+            border-radius: 6px;
+            padding-right: 40px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: #fff;
+        }
+        .search-form input[type="text"]:focus {
+            outline: none;
+            border-color: #ff8c5a;
+            box-shadow: 0 0 0 3px rgba(255, 140, 90, 0.2);
+        }
+        .input-with-clear {
+            position: relative;
+            display: inline-block;
+        }
+        .clear-button {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            border: none;
+            background: transparent;
+            color: #a4a4a4;
+            font-size: 16px;
+            line-height: 18px;
+            text-align: center;
+            cursor: pointer;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+        .clear-button:hover {
+            color: #ff5a5a;
+        }
+        .clear-button:focus {
+            outline: none;
+            color: #ff5a5a;
+        }
+        .clear-button.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .search-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .search-form button,
+        .primary-button {
             height: 36px;
-            font-size: 1em;
+            padding: 0 24px;
+            border: none;
             border-radius: 4px;
             background: #ff3333;
             color: #fff;
-            border: none;
             cursor: pointer;
-            padding: 0 20px;
-            margin-left: 8px;
         }
-        .main-actions {
-            margin-top: 24px;
+        .primary-button {
+            background: #28a745;
+            min-width: 120px;
+        }
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px 24px;
+        }
+        .form-field label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .form-field input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-field input[type="text"]:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .check-all {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        .table-wrapper {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+            max-height: 420px;
+            overflow-y: auto;
         }
         table {
-            border-collapse: collapse;
             width: 100%;
-            margin-top: 16px;
+            border-collapse: collapse;
+            min-width: 600px;
         }
         th, td {
-            border: 1px solid #ccc;
-            padding: 8px 14px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #e6e6e6;
+            text-align: left;
+            background: #fff;
         }
         th {
+            position: sticky;
+            top: 0;
             background: #f0f0f0;
-            text-align: left;
+            z-index: 1;
         }
-        /* 樣式結束 */
+        th:first-child,
+        td:first-child {
+            width: 60px;
+            text-align: center;
+        }
+        tbody tr:nth-child(even) td {
+            background: #fafafa;
+        }
+        .empty-state {
+            padding: 16px;
+            text-align: center;
+            color: #666;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .hint-message {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .inline-error {
+            color: #c62828;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    
     <div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
 
     <main class="content">
-        <h2>角色編輯器</h2>
+        <h2>角色編輯</h2>
+        <div class="panel">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
 
-        <!-- 儲存成功/失敗的訊息提示區塊 -->
-        <div th:if="${successMessage}" 
-             style="color: green; background: #e8f5e9; padding: 10px; border-radius: 4px; margin-bottom: 16px;"
-             th:text="${successMessage}">
-        </div>
-        <div th:if="${errorMessage}" 
-             style="color: red; background: #ffebee; padding: 10px; border-radius: 4px; margin-bottom: 16px;"
-             th:text="${errorMessage}">
-        </div>
-
-        <div class="editor-form">
-            
-            <!-- 區塊一：角色ID查詢 -->
-            <form th:action="@{/role-edit}" method="get" class="query-section">
-                <div class="form-group">
+            <form th:action="@{/role-edit}" method="get" class="search-form">
+                <div>
                     <label for="queryRoleId">角色代碼查詢</label>
-                    <input type="text" id="queryRoleId" name="roleId" th:value="${role.id}" placeholder="輸入角色代碼後按查詢">
+                    <div class="input-with-clear">
+                        <input type="text" id="queryRoleId" name="roleId" th:value="${role.id}"
+                               placeholder="輸入角色代碼後按查詢">
+                        <button type="button" class="clear-button" aria-label="清除"
+                                data-target="queryRoleId">×</button>
+                    </div>
                 </div>
-                <button type="submit">查詢</button>
-                <div th:if="${error}" th:text="${error}" style="color:red; margin-left: 16px;"></div>
+                <div class="search-actions">
+                    <button type="submit">查詢</button>
+                </div>
             </form>
+            <div th:if="${error}" class="inline-error" th:text="${error}"></div>
 
-            <!-- 區塊二：角色主要資訊與權限設定 (POST提交) -->
-            <form th:action="@{/role-edit}" method="post">
-                
-                <div class="form-group">
-                    <label for="roleId">角色代碼</label>
-                    <input type="text" id="roleId" name="id" th:value="${role.id}" >
-                </div>
-                
-                <div class="form-group">
-                    <label for="roleName">角色名稱</label>
-                    <input type="text" id="roleName" name="name" th:value="${role.name}">
-                </div>
-                
-                <div class="form-group">
-                    <label>功能權限設定</label>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="checkAll"></th>
-                                <th>功能群組</th>
-                                <th>功能名稱</th>
-                                <th>路徑</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="func : ${allFunctions}">
-                                <td>
-                                    <input type="checkbox" name="functionIds" th:value="${func.id}"
-                                           th:checked="${#lists.contains(role.functions.![id], func.id)}">
-                                </td>
-                                <td th:text="${func.groupName}"></td>
-                                <td th:text="${func.name}"></td>
-                                <td th:text="${func.url}"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <form th:action="@{/role-edit}" method="post" class="form-section">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="roleId">角色代碼</label>
+                        <input type="text" id="roleId" name="id" th:value="${role.id}">
+                    </div>
+                    <div class="form-field">
+                        <label for="roleName">角色名稱</label>
+                        <input type="text" id="roleName" name="name" th:value="${role.name}"
+                               placeholder="請輸入角色名稱">
+                    </div>
                 </div>
 
-                <div class="main-actions">
-                    <button type="submit">儲存</button>
+                <section>
+                    <div class="section-header">
+                        <h3>功能權限設定</h3>
+                        <label class="check-all">
+                            <input type="checkbox" id="checkAll">
+                            <span>全選/取消</span>
+                        </label>
+                    </div>
+                    <div class="hint-message" th:if="${#lists.isEmpty(allFunctions)}">
+                        目前沒有可用的功能可以指派。
+                    </div>
+                    <div class="table-wrapper" th:if="${!#lists.isEmpty(allFunctions)}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <span class="sr-only">選取</span>
+                                    </th>
+                                    <th>功能群組</th>
+                                    <th>功能名稱</th>
+                                    <th>路徑</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="func : ${allFunctions}">
+                                    <td>
+                                        <input type="checkbox" name="functionIds" th:value="${func.id}"
+                                               th:checked="${#lists.contains(role.functions.![id], func.id)}">
+                                    </td>
+                                    <td th:text="${func.groupName}"></td>
+                                    <td th:text="${func.name}"></td>
+                                    <td th:text="${func.url}"></td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(allFunctions)}">
+                                    <td colspan="4" class="empty-state">目前沒有功能資料。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <div class="form-actions">
+                    <button type="submit" class="primary-button">儲存</button>
                 </div>
             </form>
         </div>
@@ -161,14 +306,64 @@
 </div>
 
 <script>
-    // 全選/全不選的 JavaScript
-    document.getElementById('checkAll').addEventListener('change', function(e) {
-        var checkboxes = document.querySelectorAll('input[name="functionIds"]');
-        checkboxes.forEach(function(checkbox) {
-            checkbox.checked = e.target.checked;
-        });
-    });
-</script>
+    (function () {
+        const input = document.getElementById('queryRoleId');
+        const clearButton = document.querySelector('.clear-button[data-target="queryRoleId"]');
 
+        if (!input || !clearButton) {
+            return;
+        }
+
+        const toggleClearButton = () => {
+            if (input.value && input.value.trim().length > 0) {
+                clearButton.classList.add('visible');
+            } else {
+                clearButton.classList.remove('visible');
+            }
+        };
+
+        clearButton.addEventListener('click', () => {
+            input.value = '';
+            input.focus();
+            toggleClearButton();
+        });
+
+        input.addEventListener('input', toggleClearButton);
+        toggleClearButton();
+    })();
+
+    (function () {
+        const masterCheckbox = document.getElementById('checkAll');
+        if (!masterCheckbox) {
+            return;
+        }
+
+        const checkboxes = Array.from(document.querySelectorAll('input[name="functionIds"]'));
+        if (checkboxes.length === 0) {
+            masterCheckbox.disabled = true;
+            return;
+        }
+
+        const updateMasterState = () => {
+            const checkedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
+            masterCheckbox.checked = checkedCount === checkboxes.length;
+            masterCheckbox.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+        };
+
+        masterCheckbox.addEventListener('change', (event) => {
+            const { checked } = event.target;
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = checked;
+            });
+            masterCheckbox.indeterminate = false;
+        });
+
+        checkboxes.forEach((checkbox) => {
+            checkbox.addEventListener('change', updateMasterState);
+        });
+
+        updateMasterState();
+    })();
+</script>
 </body>
 </html>
