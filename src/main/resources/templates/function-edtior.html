@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant" xml:lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>功能編輯</title>
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: "Noto Sans", Arial, Helvetica, sans-serif;
+            background: #f8f9fb;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .content {
+            flex: 1;
+            padding: 36px 48px;
+            background: #f8f9fb;
+        }
+        .panel {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 24px;
+        }
+        .search-form {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .search-form label {
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .search-form input[type="text"] {
+            width: 320px;
+            padding: 10px 12px;
+            border: 1px solid #e0a15a;
+            border-radius: 6px;
+            padding-right: 40px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: #fff;
+        }
+        .search-form input[type="text"]:focus {
+            outline: none;
+            border-color: #ff8c5a;
+            box-shadow: 0 0 0 3px rgba(255, 140, 90, 0.2);
+        }
+        .input-with-clear {
+            position: relative;
+            display: inline-block;
+        }
+        .clear-button {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            border: none;
+            background: transparent;
+            color: #a4a4a4;
+            font-size: 16px;
+            line-height: 18px;
+            text-align: center;
+            cursor: pointer;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+        .clear-button:hover {
+            color: #ff5a5a;
+        }
+        .clear-button:focus {
+            outline: none;
+            color: #ff5a5a;
+        }
+        .clear-button.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .search-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .search-form button {
+            height: 36px;
+            padding: 0 24px;
+            border: none;
+            border-radius: 4px;
+            background: #ff3333;
+            color: #fff;
+            cursor: pointer;
+        }
+        .create-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            padding: 0 24px;
+            border-radius: 4px;
+            background: #4a90e2;
+            color: #fff;
+            text-decoration: none;
+        }
+        .edit-form {
+            margin: 0;
+            display: inline;
+        }
+        .edit-button {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 4px;
+            border: none;
+            background: #4a90e2;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .update-button {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 4px;
+            border: none;
+            background: #28a745;
+            color: #fff;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        .cancel-button {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+        }
+        .editable-input,
+        .editable-select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .editing-row {
+            background: #fff7e6;
+        }
+        .alert {
+            padding: 10px 14px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        .empty-hint {
+            margin-top: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
+
+    <main class="content">
+        <h2>功能編輯</h2>
+        <div class="panel">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+            <form th:action="@{/function-edtior}" method="get" class="search-form">
+                <div>
+                    <label for="keyword">功能中文或英文名稱</label>
+                    <div class="input-with-clear">
+                        <input id="keyword" name="keyword" type="text" th:value="${keyword}" placeholder="輸入關鍵字進行查詢">
+                        <button type="button" class="clear-button" aria-label="清除" data-target="keyword">×</button>
+                    </div>
+                </div>
+                <div class="search-actions">
+                    <button type="submit">查詢</button>
+                    <a th:href="@{/function-edtior/new}" class="create-button">新增</a>
+                </div>
+            </form>
+
+            <div class="table-wrapper" th:if="${!#lists.isEmpty(searchResults)}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>編輯</th>
+                            <th>功能群組</th>
+                            <th>英文名稱</th>
+                            <th>中文名稱</th>
+                            <th>路徑</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="func : ${searchResults}" th:classappend="${selectedFunctionId == func.id} ? 'editing-row'">
+                            <td>
+                                <div th:if="${selectedFunctionId == func.id}">
+                                    <form th:id="${'editForm_' + func.id}" th:action="@{/function-edtior}" method="post" class="edit-form">
+                                        <input type="hidden" name="id" th:value="${func.id}">
+                                        <input type="hidden" name="keyword" th:value="${keyword}">
+                                    </form>
+                                    <button type="submit" th:attr="form=${'editForm_' + func.id}" class="update-button">更新</button>
+                                    <button type="button" class="cancel-button" onclick="window.history.back()">放棄</button>
+                                </div>
+                                <div th:unless="${selectedFunctionId == func.id}">
+                                    <form th:action="@{/function-edtior}" method="get" class="edit-form">
+                                        <input type="hidden" name="functionId" th:value="${func.id}">
+                                        <input type="hidden" name="keyword" th:value="${keyword}">
+                                        <button type="submit" class="edit-button">編輯</button>
+                                    </form>
+                                </div>
+                            </td>
+                            <td>
+                                <div th:if="${selectedFunctionId == func.id}">
+                                    <select name="groupId" class="editable-select"
+                                            th:attr="form=${'editForm_' + func.id}">
+                                        <option value="" disabled>請選擇</option>
+                                        <option th:each="group : ${groupOptions}"
+                                                th:value="${group.id}"
+                                                th:selected="${group.id == func.groupId}"
+                                                th:text="${group.name}"></option>
+                                    </select>
+                                </div>
+                                <div th:unless="${selectedFunctionId == func.id}"
+                                     th:text="${func.groupName}"></div>
+                            </td>
+                            <td>
+                                <div th:if="${selectedFunctionId == func.id}">
+                                    <input type="text" name="code" class="editable-input"
+                                           th:attr="form=${'editForm_' + func.id}"
+                                           th:value="${func.code}">
+                                </div>
+                                <div th:unless="${selectedFunctionId == func.id}"
+                                     th:text="${func.code}"></div>
+                            </td>
+                            <td>
+                                <div th:if="${selectedFunctionId == func.id}">
+                                    <input type="text" name="name" class="editable-input"
+                                           th:attr="form=${'editForm_' + func.id}"
+                                           th:value="${func.name}">
+                                </div>
+                                <div th:unless="${selectedFunctionId == func.id}"
+                                     th:text="${func.name}"></div>
+                            </td>
+                            <td>
+                                <div th:if="${selectedFunctionId == func.id}">
+                                    <input type="text" name="url" class="editable-input"
+                                           th:attr="form=${'editForm_' + func.id}"
+                                           th:value="${func.url}">
+                                </div>
+                                <div th:unless="${selectedFunctionId == func.id}"
+                                     th:text="${func.url}"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty-hint" th:if="${#lists.isEmpty(searchResults)}">
+                尚未找到符合條件的功能，請輸入關鍵字再試一次。
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+    (function () {
+        const input = document.getElementById('keyword');
+        const button = document.querySelector('.clear-button[data-target="keyword"]');
+
+        if (!input || !button) {
+            return;
+        }
+
+        const toggleButton = () => {
+            if (input.value && input.value.trim().length > 0) {
+                button.classList.add('visible');
+            } else {
+                button.classList.remove('visible');
+            }
+        };
+
+        button.addEventListener('click', () => {
+            input.value = '';
+            input.focus();
+            toggleButton();
+        });
+
+        input.addEventListener('input', toggleButton);
+
+        toggleButton();
+    })();
+</script>
+</body>
+</html>

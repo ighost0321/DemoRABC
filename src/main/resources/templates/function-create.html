@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>功能新增</title>
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: "Noto Sans", Arial, Helvetica, sans-serif;
+            background: #f8f9fb;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .content {
+            flex: 1;
+            padding: 36px 48px;
+            background: #f8f9fb;
+        }
+        .panel {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 24px;
+        }
+        .alert {
+            padding: 10px 14px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            background: #ffebee;
+            color: #c62828;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        .editable-input,
+        .editable-select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .submit-button {
+            padding: 8px 24px;
+            border: none;
+            border-radius: 4px;
+            background: #28a745;
+            color: #fff;
+            cursor: pointer;
+        }
+        .cancel-button {
+            padding: 8px 24px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #333;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
+
+    <main class="content">
+        <h2>功能新增</h2>
+        <div class="panel">
+            <div th:if="${errorMessage}" class="alert" th:text="${errorMessage}"></div>
+
+            <form th:action="@{/function-edtior/new}" method="post">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>功能群組</th>
+                                <th>英文名稱</th>
+                                <th>中文名稱</th>
+                                <th>路徑</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select name="groupId" class="editable-select" required>
+                                        <option value="" disabled th:selected="${formData.groupId} == null">請選擇</option>
+                                        <option th:each="group : ${groupOptions}"
+                                                th:value="${group.id}"
+                                                th:selected="${group.id} == formData.groupId"
+                                                th:text="${group.name}"></option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" name="code" class="editable-input" maxlength="100" required
+                                           th:value="${formData.code}">
+                                </td>
+                                <td>
+                                    <input type="text" name="name" class="editable-input" maxlength="100" required
+                                           th:value="${formData.name}">
+                                </td>
+                                <td>
+                                    <input type="text" name="url" class="editable-input" maxlength="255" required
+                                           th:value="${formData.url}">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-button">儲存</button>
+                    <a th:href="@{/function-edtior}" class="cancel-button">取消</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+</body>
+</html>

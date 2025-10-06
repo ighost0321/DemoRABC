@@ -10,7 +10,9 @@ public interface FunctionRepository extends JpaRepository<Function, Integer> {
 
     List<Function> findByGroup_Id(Integer groupId);
 
-    List<Function> findByNameContainingOrCodeContaining(String name, String code);
+    List<Function> findByNameContainingIgnoreCaseOrCodeContainingIgnoreCase(String name, String code);
 
     List<Function> findAllByIdIn(List<Integer> ids);
+
+    boolean existsByCodeIgnoreCase(String code);
 }
