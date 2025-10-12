@@ -123,18 +123,28 @@
             <nav>
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
-                        <a class="page-link" th:href="@{/role-query(page=${currentPage-1}, keyword=${keyword})}" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
+                        <a class="page-link" th:href="@{/role-query(page=1, keyword=${keyword})}" aria-label="First">
+                            <i class="fas fa-angles-left"></i>
                         </a>
                     </li>
-                    <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
+                        <a class="page-link" th:href="@{/role-query(page=${currentPage-1}, keyword=${keyword})}" aria-label="Previous">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(pageStart, pageEnd)}"
                         th:classappend="${i == currentPage} ? ' active'">
                         <a class="page-link" th:href="@{/role-query(page=${i}, keyword=${keyword})}"
                            th:text="${i}"></a>
                     </li>
                     <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
                         <a class="page-link" th:href="@{/role-query(page=${currentPage+1}, keyword=${keyword})}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
+                        <a class="page-link" th:href="@{/role-query(page=${totalPages}, keyword=${keyword})}" aria-label="Last">
+                            <i class="fas fa-angles-right"></i>
                         </a>
                     </li>
                 </ul>

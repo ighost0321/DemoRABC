@@ -49,6 +49,9 @@ public class RoleQueryController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", totalPages);
+        int[] pageWindow = calculatePageWindow(currentPage, totalPages);
+        model.addAttribute("pageStart", pageWindow[0]);
+        model.addAttribute("pageEnd", pageWindow[1]);
 
         List<FunctionDto> userFunctions = userService.getFunctionsByUsername(principal.getName());
         boolean canEditRole = userFunctions.stream()
@@ -76,6 +79,22 @@ public class RoleQueryController {
             sanitizedPage = Math.min(sanitizedPage, totalPages);
         }
         return sanitizedPage;
+    }
+
+    private int[] calculatePageWindow(int currentPage, int totalPages) {
+        if (totalPages <= 0) {
+            return new int[] { 0, 0 };
+        }
+
+        final int windowSize = 10;
+        int start = Math.max(1, currentPage - windowSize / 2);
+        int end = Math.min(totalPages, start + windowSize - 1);
+
+        if (end - start + 1 < windowSize) {
+            start = Math.max(1, end - windowSize + 1);
+        }
+
+        return new int[] { start, end };
     }
 
     private List<String> extractGroups(List<FunctionDto> functions) {

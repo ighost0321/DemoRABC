@@ -52,6 +52,12 @@ public class ActivityLogController {
         model.addAttribute("actionType", actionType);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
+        int totalPages = logs.getTotalPages();
+        int currentPageDisplay = logs.getNumber() + 1;
+        int[] pageWindow = calculatePageWindow(currentPageDisplay, totalPages);
+        model.addAttribute("currentPageDisplay", currentPageDisplay);
+        model.addAttribute("pageStart", pageWindow[0]);
+        model.addAttribute("pageEnd", pageWindow[1]);
 
         model.addAttribute("actionTypes", List.of(
                 ActivityLog.LOGIN_SUCCESS,
@@ -64,6 +70,22 @@ public class ActivityLogController {
         model.addAttribute("functions", Collections.emptyList());
 
         return VIEW_ACTIVITY_LOGS;
+    }
+
+    private int[] calculatePageWindow(int currentPage, int totalPages) {
+        if (totalPages <= 0) {
+            return new int[] { 0, 0 };
+        }
+
+        final int windowSize = 10;
+        int start = Math.max(1, currentPage - windowSize / 2);
+        int end = Math.min(totalPages, start + windowSize - 1);
+
+        if (end - start + 1 < windowSize) {
+            start = Math.max(1, end - windowSize + 1);
+        }
+
+        return new int[] { start, end };
     }
     
     /**

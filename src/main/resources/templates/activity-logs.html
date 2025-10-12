@@ -156,21 +156,31 @@
             <nav>
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${logs.first} ? ' disabled'">
+                        <a class="page-link" th:href="@{/activity-log-query(page=0, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}" aria-label="First">
+                            <i class="fas fa-angles-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${logs.first} ? ' disabled'">
                         <a class="page-link" th:href="@{/activity-log-query(page=${logs.number - 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
-                            <i class="fas fa-chevron-left"></i>
+                            <i class="fas fa-angle-left"></i>
                         </a>
                     </li>
                     
-                    <li class="page-item" th:each="i : ${#numbers.sequence(0, logs.totalPages - 1)}"
-                        th:classappend="${i == logs.number} ? ' active'">
-                        <span class="page-link" th:if="${i == logs.number}" th:text="${i + 1}"></span>
-                        <a class="page-link" th:if="${i != logs.number}" th:href="@{/activity-log-query(page=${i}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}"
-                           th:text="${i + 1}"></a>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(pageStart, pageEnd)}"
+                        th:classappend="${i == currentPageDisplay} ? ' active'">
+                        <span class="page-link" th:if="${i == currentPageDisplay}" th:text="${i}"></span>
+                        <a class="page-link" th:if="${i != currentPageDisplay}" th:href="@{/activity-log-query(page=${i - 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}"
+                           th:text="${i}"></a>
                     </li>
                     
                     <li class="page-item" th:classappend="${logs.last} ? ' disabled'">
                         <a class="page-link" th:href="@{/activity-log-query(page=${logs.number + 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}">
-                            <i class="fas fa-chevron-right"></i>
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${logs.last} ? ' disabled'">
+                        <a class="page-link" th:href="@{/activity-log-query(page=${logs.totalPages - 1}, size=${logs.size}, username=${username}, actionType=${actionType}, startDate=${startDate}, endDate=${endDate})}" aria-label="Last">
+                            <i class="fas fa-angles-right"></i>
                         </a>
                     </li>
                 </ul>
