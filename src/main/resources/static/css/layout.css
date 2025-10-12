@@ -107,6 +107,29 @@ body {
     color: #1f2937;
 }
 
+.alert {
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 0.98rem;
+    line-height: 1.5;
+}
+
+.alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.alert-error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.alert-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
 @media (max-width: 1024px) {
     .main-content {
         padding: 24px;

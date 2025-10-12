@@ -16,13 +16,6 @@
             flex-direction: column;
             gap: 24px;
         }
-        .function-create__alert {
-            padding: 10px 14px;
-            border-radius: 4px;
-            margin-bottom: 16px;
-            background: #ffebee;
-            color: #c62828;
-        }
         .function-create__table-wrapper {
             overflow-x: auto;
         }
@@ -81,7 +74,9 @@
     <main class="main-content">
         <div th:replace="~{fragments/page-header :: pageHeader('功能新增', '新增系統功能並設定屬性', 'fas fa-plus-circle')}"></div>
         <section class="page-section function-create__panel">
-            <div th:if="${errorMessage}" class="function-create__alert" th:text="${errorMessage}"></div>
+            <div th:if="${errorMessage}" class="alert-stack">
+                <div class="alert alert-error" th:text="${errorMessage}"></div>
+            </div>
 
             <form th:action="@{/function-edtior/new}" method="post">
                 <div class="function-create__table-wrapper">

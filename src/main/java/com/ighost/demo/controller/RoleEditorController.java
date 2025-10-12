@@ -63,9 +63,6 @@ public class RoleEditorController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            if (!StringUtils.hasText(roleId)) {
-                throw new IllegalArgumentException("角色代碼不可為空！");
-            }
             roleService.saveRole(roleId, roleName, functionIds);
             redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "角色 [" + roleName + "] 儲存成功！");
         } catch (Exception e) {

@@ -16,18 +16,6 @@
             flex-direction: column;
             gap: 24px;
         }
-        .alert {
-            padding: 10px 14px;
-            border-radius: 4px;
-        }
-        .alert-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        .alert-error {
-            background: #ffebee;
-            color: #c62828;
-        }
         .search-form {
             display: flex;
             gap: 12px;
@@ -196,10 +184,6 @@
             color: #666;
             font-size: 0.95rem;
         }
-        .inline-error {
-            color: #c62828;
-            font-size: 0.95rem;
-        }
     </style>
 </head>
 <body>
@@ -209,8 +193,11 @@
     <main class="main-content">
         <div th:replace="~{fragments/page-header :: pageHeader('角色編輯', '管理角色資訊與權限', 'fas fa-user-shield')}"></div>
         <section class="page-section role-panel">
-            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-            <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+            <div th:if="${successMessage != null or errorMessage != null or error != null}" class="alert-stack">
+                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+                <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}"></div>
+            </div>
 
             <form th:action="@{/role-edit}" method="get" class="search-form">
                 <div>
@@ -226,8 +213,6 @@
                     <button type="submit">查詢</button>
                 </div>
             </form>
-            <div th:if="${error}" class="inline-error" th:text="${error}"></div>
-
             <form th:action="@{/role-edit}" method="post" class="form-section">
                 <input type="hidden" id="roleId" name="id" th:value="${role.id}">
                 <input type="hidden" id="roleName" name="name" th:value="${role.name}">
@@ -285,10 +270,30 @@
     (function () {
         const input = document.getElementById('queryRoleId');
         const clearButton = document.querySelector('.clear-button[data-target="queryRoleId"]');
+        const hiddenRoleId = document.getElementById('roleId');
+        const hiddenRoleName = document.getElementById('roleName');
+        const functionCheckboxes = Array.from(document.querySelectorAll('input[name="functionIds"]'));
+        const masterCheckbox = document.getElementById('checkAll');
 
         if (!input || !clearButton) {
             return;
         }
+
+        const resetRoleSelection = () => {
+            if (hiddenRoleId) {
+                hiddenRoleId.value = '';
+            }
+            if (hiddenRoleName) {
+                hiddenRoleName.value = '';
+            }
+            functionCheckboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+            });
+            if (masterCheckbox) {
+                masterCheckbox.checked = false;
+                masterCheckbox.indeterminate = false;
+            }
+        };
 
         const toggleClearButton = () => {
             if (input.value && input.value.trim().length > 0) {
@@ -301,10 +306,16 @@
         clearButton.addEventListener('click', () => {
             input.value = '';
             input.focus();
+            resetRoleSelection();
             toggleClearButton();
         });
 
-        input.addEventListener('input', toggleClearButton);
+        input.addEventListener('input', () => {
+            if (!input.value || input.value.trim().length === 0) {
+                resetRoleSelection();
+            }
+            toggleClearButton();
+        });
         toggleClearButton();
     })();
 

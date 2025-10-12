@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.ighost.demo.entity.Function;
 import com.ighost.demo.entity.Role;
@@ -43,10 +44,17 @@ public class RoleService {
 
     @Transactional
     public void saveRole(String roleId, String roleName, List<Integer> functionIds) {
+        if (!StringUtils.hasText(roleId)) {
+            throw new IllegalArgumentException("角色代碼不可為空！");
+        }
+        if (!StringUtils.hasText(roleName)) {
+            throw new IllegalArgumentException("角色名稱不可為空！");
+        }
+
         Role role = roleRepository.findById(roleId).orElseGet(Role::new);
 
-        role.setId(roleId);
-        role.setName(roleName);
+        role.setId(roleId.trim());
+        role.setName(roleName.trim());
 
         if (functionIds != null && !functionIds.isEmpty()) {
             List<Function> functions = functionRepository.findAllByIdIn(functionIds);

@@ -189,8 +189,10 @@
     <main class="main-content">
         <div th:replace="~{fragments/page-header :: pageHeader('功能編輯', '管理功能設定與權限', 'fas fa-sliders-h')}"></div>
         <section class="page-section function-editor__panel">
-            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-            <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+            <div th:if="${successMessage != null or errorMessage != null}" class="alert-stack">
+                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+            </div>
 
             <form th:action="@{/function-edtior}" method="get" class="search-form">
                 <div>
