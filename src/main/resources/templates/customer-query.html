@@ -1,9 +1,25 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>客戶查詢</title><meta charset="UTF-8"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>客戶查詢</title>
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
 <body>
-<h2>客戶查詢</h2>
-<p>這是客戶查詢頁面。</p>
-<a th:href="@{/}">回首頁</a>
+<div class="sidebar-layout">
+    <div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
+
+    <main class="main-content">
+        <div th:replace="~{fragments/page-header :: pageHeader('客戶查詢', '快速檢視客戶清單', 'fas fa-users')}"></div>
+
+        <section class="page-section page-section--flat">
+            <p>這是客戶查詢頁面。</p>
+            <a th:href="@{/}">回首頁</a>
+        </section>
+    </main>
+</div>
 </body>
 </html>

@@ -5,28 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         html, body {
             height: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: "Noto Sans", Arial, Helvetica, sans-serif;
-            background: #f8f9fb;
         }
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-        .content {
-            flex: 1;
-            padding: 36px 48px;
-            background: #f8f9fb;
-        }
-        .panel {
-            background: #fff;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 24px;
+        .role-panel {
             display: flex;
             flex-direction: column;
             gap: 24px;
@@ -218,12 +203,12 @@
     </style>
 </head>
 <body>
-<div class="container">
+<div class="sidebar-layout">
     <div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
 
-    <main class="content">
-        <h2>角色編輯</h2>
-        <div class="panel">
+    <main class="main-content">
+        <div th:replace="~{fragments/page-header :: pageHeader('角色編輯', '管理角色資訊與權限', 'fas fa-user-shield')}"></div>
+        <section class="page-section role-panel">
             <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
             <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
 
@@ -292,7 +277,7 @@
                     <button type="submit" class="primary-button">儲存</button>
                 </div>
             </form>
-        </div>
+        </section>
     </main>
 </div>
 

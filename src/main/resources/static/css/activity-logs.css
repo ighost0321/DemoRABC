@@ -1,32 +1,12 @@
 /* Activity Logs Styles */
 
-/* 版面配置 */
-.sidebar-layout {
-    display: flex;
-    min-height: 100vh;
-    background-color: #f8f9fa;
-}
-
-/* 主內容區域佈局 */
-.main-content {
-    flex: 1;
-    min-height: 100vh;
-    background-color: #f8f9fa;
-    padding: 0;
-}
-
-/* 頁面標題 */
-.page-header {
-    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-    color: white;
-    padding: 2rem 0;
-    margin-bottom: 0;
-    width: 100%;
-}
-
 /* 內容容器 */
 .main-content .container-fluid {
     padding: 2rem 1.5rem;
+}
+
+.main-content.activity-logs-content {
+    padding: 0;
 }
 
 /* 搜尋表單區域 */

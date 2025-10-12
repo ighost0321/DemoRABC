@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/layout.css">
     <link rel="stylesheet" href="/css/pagination.css">
     <link th:href="@{/css/activity-logs.css}" rel="stylesheet">
 </head>
@@ -16,27 +17,8 @@
 <div class="sidebar-layout">
     <div th:replace="~{fragments/sidebar :: sidebar(${groups}, ${functions})}"></div>
 
-    <main class="main-content">
-        <!-- Header -->
-        <div class="page-header">
-            <div class="container-fluid">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h1 class="mb-0">
-                            <i class="fas fa-chart-line me-3"></i>
-                            活動日誌管理
-                        </h1>
-                        <p class="mb-0 mt-2">追蹤和分析系統使用者活動軌跡</p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <span class="badge bg-light text-dark p-2">
-                            <i class="fas fa-user me-1"></i>
-                            <span sec:authentication="name">管理員</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <main class="main-content activity-logs-content">
+        <div th:replace="~{fragments/page-header :: pageHeader('活動日誌管理', '追蹤和分析系統使用者活動軌跡', 'fas fa-chart-line')}"></div>
 
         <div class="container-fluid">
             <div class="row">
