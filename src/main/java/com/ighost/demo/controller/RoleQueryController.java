@@ -51,6 +51,12 @@ public class RoleQueryController {
         model.addAttribute("totalPages", totalPages);
 
         List<FunctionDto> userFunctions = userService.getFunctionsByUsername(principal.getName());
+        boolean canEditRole = userFunctions.stream()
+                .map(FunctionDto::url)
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .anyMatch("/role-edit"::equalsIgnoreCase);
+        model.addAttribute("canEditRole", canEditRole);
         model.addAttribute("functions", userFunctions);
         model.addAttribute("groups", extractGroups(userFunctions));
 

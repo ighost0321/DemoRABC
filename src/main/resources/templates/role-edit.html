@@ -244,17 +244,8 @@
             <div th:if="${error}" class="inline-error" th:text="${error}"></div>
 
             <form th:action="@{/role-edit}" method="post" class="form-section">
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label for="roleId">角色代碼</label>
-                        <input type="text" id="roleId" name="id" th:value="${role.id}">
-                    </div>
-                    <div class="form-field">
-                        <label for="roleName">角色名稱</label>
-                        <input type="text" id="roleName" name="name" th:value="${role.name}"
-                               placeholder="請輸入角色名稱">
-                    </div>
-                </div>
+                <input type="hidden" id="roleId" name="id" th:value="${role.id}">
+                <input type="hidden" id="roleName" name="name" th:value="${role.name}">
 
                 <section>
                     <div class="section-header">

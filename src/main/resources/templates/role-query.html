@@ -104,7 +104,10 @@
                 </thead>
                 <tbody>
                 <tr th:each="role : ${roles}">
-                    <td th:text="${role.id}"></td>
+                    <td>
+                        <a th:if="${canEditRole}" th:href="@{/role-edit(roleId=${role.id})}" th:text="${role.id}"></a>
+                        <span th:unless="${canEditRole}" th:text="${role.id}"></span>
+                    </td>
                     <td th:text="${role.name}"></td>
                     <td>
                         <ul>
