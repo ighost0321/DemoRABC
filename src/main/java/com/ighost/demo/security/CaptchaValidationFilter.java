@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CaptchaValidationFilter extends OncePerRequestFilter {
 
-    private static final String LOGIN_PROCESSING_URL = "/login";
+    private static final String LOGIN_URL = "/login";
     private static final String CAPTCHA_PARAMETER = "captcha";
     private static final int MAX_CAPTCHA_LENGTH = 10;
     private static final int MAX_ATTEMPTS = 5;
@@ -63,7 +63,7 @@ public class CaptchaValidationFilter extends OncePerRequestFilter {
     }
 
     private boolean isLoginRequest(HttpServletRequest request) {
-        return LOGIN_PROCESSING_URL.equals(request.getServletPath())
+        return LOGIN_URL.equals(request.getServletPath())
                 && "POST".equalsIgnoreCase(request.getMethod());
     }
 
@@ -110,18 +110,18 @@ public class CaptchaValidationFilter extends OncePerRequestFilter {
     }
 
     private boolean isLockedOut(String clientId) {
-        AttemptRecord client = attemptTracker.get(clientId);
-        if (client == null) {
+        AttemptRecord user = attemptTracker.get(clientId);
+        if (user == null) {
             return false;
         }
 
         // Clean up expired lockouts
-        if (System.currentTimeMillis() - client.firstAttemptTime > LOCKOUT_DURATION_MS) {
+        if (System.currentTimeMillis() - user.firstAttemptTime > LOCKOUT_DURATION_MS) {
             attemptTracker.remove(clientId);
             return false;
         }
 
-        return client.attempts >= MAX_ATTEMPTS;
+        return user.attempts >= MAX_ATTEMPTS;
     }
 
     private void recordFailedAttempt(String clientId) {
