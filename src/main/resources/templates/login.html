@@ -1,56 +1,80 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant" xml:lang="zh-Hant">
 <head>
-    <title>登入</title>
+    <title>登入 DemoRABC</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <h2>請登入</h2>
-    <form th:action="@{/login}" method="post">
-        <div>
-            <label>帳號：</label>
-            <input type="text" name="username" />
+<body class="auth-body">
+<div class="auth-wrapper">
+    <header class="auth-header">
+        <div class="auth-header__icon">
+            <i class="fas fa-shield-alt"></i>
         </div>
-        <div>
-            <label>密碼：</label>
-            <input type="password" name="password" />
+        <h1 class="auth-header__title">系統登入</h1>
+        <p class="auth-header__subtitle">請輸入您的帳號、密碼與驗證碼以進入系統</p>
+    </header>
+
+    <div th:if="${param.error}" class="auth-alert auth-alert--error">
+        <span th:switch="${param.error[0]}">
+            <span th:case="'captcha'">驗證碼錯誤，請重新輸入。</span>
+            <span th:case="'account_locked'">帳號暫時鎖定，請稍後再試。</span>
+            <span th:case="*">帳號或密碼錯誤。</span>
+        </span>
+    </div>
+    <div th:if="${param.logout}" class="auth-alert auth-alert--success">
+        <span>您已成功登出。</span>
+    </div>
+
+    <form th:action="@{/login}" method="post" class="auth-form">
+        <div class="auth-field">
+            <label for="username">帳號</label>
+            <input type="text" id="username" name="username" autocomplete="username" required>
         </div>
-        <div>
-            <label>驗證碼：</label>
-            <input type="text" name="captcha" autocomplete="off" required />
-            <img th:src="@{/captcha.jpg}" alt="驗證碼" id="captchaImage"
-                 style="vertical-align: middle; cursor: pointer; margin-left: 8px;"
-                 title="點擊重新產生驗證碼">
-            <button type="button" id="refreshCaptchaButton">重新整理</button>
+        <div class="auth-field">
+            <label for="password">密碼</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" required>
         </div>
-        <div>
-            <button type="submit">登入</button>
+        <div class="auth-field">
+            <label for="captchaInput">驗證碼</label>
+            <div class="auth-captcha">
+                <input type="text" id="captchaInput" name="captcha" autocomplete="off" required placeholder="請輸入圖片中的文字">
+                <img th:src="@{/captcha.jpg}" alt="驗證碼" id="captchaImage"
+                     title="點擊重新產生驗證碼">
+                <button type="button" class="auth-refresh" id="refreshCaptchaButton">
+                    <i class="fas fa-arrows-rotate"></i>
+                    重新整理
+                </button>
+            </div>
         </div>
-        <div th:if="${param.error}">
-            <span style="color:red;" th:switch="${param.error[0]}">
-                <span th:case="'captcha'">驗證碼錯誤，請重新輸入。</span>
-                <span th:case="'account_locked'">帳號暫時鎖定，請稍後再試。</span>
-                <span th:case="*">帳號或密碼錯誤。</span>
-            </span>
-        </div>
-        <div th:if="${param.logout}">
-            <span style="color:green;">已登出</span>
+
+        <div class="auth-actions">
+            <button type="submit" class="auth-submit">登入</button>
         </div>
     </form>
-    <script>
-        (function () {
-            const image = document.getElementById('captchaImage');
-            const refreshButton = document.getElementById('refreshCaptchaButton');
-            if (!image || !refreshButton) {
-                return;
-            }
-            const refreshCaptcha = () => {
-                image.src = '/captcha.jpg?ts=' + Date.now();
-            };
-            image.addEventListener('click', refreshCaptcha);
-            refreshButton.addEventListener('click', refreshCaptcha);
-            refreshCaptcha();
-        })();
-    </script>
+
+    <footer class="auth-footer">
+        <span>© <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}"></span> DemoRABC</span>
+    </footer>
+</div>
+
+<script>
+    (function () {
+        const image = document.getElementById('captchaImage');
+        const refreshButton = document.getElementById('refreshCaptchaButton');
+        if (!image || !refreshButton) {
+            return;
+        }
+        const refreshCaptcha = () => {
+            image.src = '/captcha.jpg?ts=' + Date.now();
+        };
+        image.addEventListener('click', refreshCaptcha);
+        refreshButton.addEventListener('click', refreshCaptcha);
+        refreshCaptcha();
+    })();
+</script>
 </body>
 </html>
