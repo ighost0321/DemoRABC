@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -27,6 +29,10 @@ public class ActivityLogService {
     
     private final ActivityLogRepository activityLogRepository;
     private final ObjectMapper objectMapper;
+    @Lazy
+    @Autowired
+    private ActivityLogService self;
+    private static final String HEADER_USER_AGENT = "User-Agent";
     
     /**
      * 記錄使用者活動
@@ -60,9 +66,9 @@ public class ActivityLogService {
         String requestUrl = request.getRequestURI();
         String requestParameters = extractRequestParameters(request);
         String ipAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
+        String userAgent = request.getHeader(HEADER_USER_AGENT);
         
-        logActivity(username, actionType, requestUrl, requestParameters, ipAddress, userAgent);
+        self.logActivity(username, actionType, requestUrl, requestParameters, ipAddress, userAgent);
     }
     
     /**
@@ -71,9 +77,9 @@ public class ActivityLogService {
     @Transactional
     public void logLoginSuccess(String username, HttpServletRequest request) {
         String ipAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
+        String userAgent = request.getHeader(HEADER_USER_AGENT);
         
-        logActivity(username, ActivityLog.LOGIN_SUCCESS, "/login", null, ipAddress, userAgent);
+        self.logActivity(username, ActivityLog.LOGIN_SUCCESS, "/login", null, ipAddress, userAgent);
     }
     
     /**
@@ -82,9 +88,9 @@ public class ActivityLogService {
     @Transactional
     public void logLoginFailure(String username, HttpServletRequest request) {
         String ipAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
+        String userAgent = request.getHeader(HEADER_USER_AGENT);
         
-        logActivity(username, ActivityLog.LOGIN_FAIL, "/login", null, ipAddress, userAgent);
+        self.logActivity(username, ActivityLog.LOGIN_FAIL, "/login", null, ipAddress, userAgent);
     }
     
     /**
@@ -93,9 +99,9 @@ public class ActivityLogService {
     @Transactional
     public void logLogout(String username, HttpServletRequest request) {
         String ipAddress = getClientIpAddress(request);
-        String userAgent = request.getHeader("User-Agent");
+        String userAgent = request.getHeader(HEADER_USER_AGENT);
         
-        logActivity(username, ActivityLog.LOGOUT, "/logout", null, ipAddress, userAgent);
+        self.logActivity(username, ActivityLog.LOGOUT, "/logout", null, ipAddress, userAgent);
     }
     
     /**
