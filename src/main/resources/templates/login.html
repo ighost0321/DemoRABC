@@ -16,14 +16,41 @@
             <input type="password" name="password" />
         </div>
         <div>
+            <label>驗證碼：</label>
+            <input type="text" name="captcha" autocomplete="off" required />
+            <img th:src="@{/captcha.jpg}" alt="驗證碼" id="captchaImage"
+                 style="vertical-align: middle; cursor: pointer; margin-left: 8px;"
+                 title="點擊重新產生驗證碼">
+            <button type="button" id="refreshCaptchaButton">重新整理</button>
+        </div>
+        <div>
             <button type="submit">登入</button>
         </div>
         <div th:if="${param.error}">
-            <span style="color:red;">帳號或密碼錯誤</span>
+            <span style="color:red;" th:switch="${param.error[0]}">
+                <span th:case="'captcha'">驗證碼錯誤，請重新輸入。</span>
+                <span th:case="'account_locked'">帳號暫時鎖定，請稍後再試。</span>
+                <span th:case="*">帳號或密碼錯誤。</span>
+            </span>
         </div>
         <div th:if="${param.logout}">
             <span style="color:green;">已登出</span>
         </div>
     </form>
+    <script>
+        (function () {
+            const image = document.getElementById('captchaImage');
+            const refreshButton = document.getElementById('refreshCaptchaButton');
+            if (!image || !refreshButton) {
+                return;
+            }
+            const refreshCaptcha = () => {
+                image.src = '/captcha.jpg?ts=' + Date.now();
+            };
+            image.addEventListener('click', refreshCaptcha);
+            refreshButton.addEventListener('click', refreshCaptcha);
+            refreshCaptcha();
+        })();
+    </script>
 </body>
 </html>

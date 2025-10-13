@@ -6,7 +6,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.ighost.demo.security.CaptchaValidationFilter;
 import com.ighost.demo.service.UserDetailsServiceImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -19,15 +21,17 @@ public class SecurityConfig {
     private final CustomAuthenticationSuccessHandler successHandler;
     private final CustomAuthenticationFailureHandler failureHandler;
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
+    private final CaptchaValidationFilter captchaValidationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 允許靜態資源
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/captcha.jpg").permitAll() // 允許靜態資源與驗證碼
                         .requestMatchers("/login", "/login?error", "/login?logout").permitAll() // 允許登入頁面
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailsService)
+                .addFilterBefore(captchaValidationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/login")
                         .successHandler(successHandler) // 使用自定義成功處理器
