@@ -45,4 +45,5 @@ public class Function {
     @Column(name = "url", nullable = false)
     @ToString.Include
     private String url;
+
 }
