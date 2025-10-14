@@ -58,9 +58,9 @@ DemoRABC 為一套基於 Spring Boot 的權限與功能管理系統，提供角�
 - **前端**：Thymeleaf + 原生 CSS/JS，使用共用版面 `layout.css` 與自訂登入樣式 `login.css`。  
 - **資料庫**：PostgreSQL（JDBC URL 於 `application.yaml` 設定）。  
 - **安全性元件**：
-  - `CaptchaValidationFilter`（自訂 `OncePerRequestFilter`）於登入前驗證 Kaptcha。  
-  - `CustomAuthenticationSuccessHandler` & `CustomAuthenticationFailureHandler` 處理登入事件。  
-  - `ActivityLoggingAspect` 透過 AOP 記錄頁面存取與資料操作。
+  - `CaptchaValidationFilter`（自訂 `OncePerRequestFilter`），在 `UsernamePasswordAuthenticationFilter` 前驗證使用者輸入的驗證碼並清理 Session 中的驗證碼值。  
+  - `CustomAuthenticationSuccessHandler`、`CustomAuthenticationFailureHandler` 與 `CustomLogoutSuccessHandler` 分別處理登入成功、失敗與登出事件，同時串接活動日誌服務。  
+  - `ActivityLoggingAspect` 透過 AOP 記錄頁面存取與資料操作，補齊稽核足跡。
 
 部署拓撲：使用者 → Browser/Proxy → Spring Boot 應用 → PostgreSQL 資料庫。
 
@@ -69,12 +69,13 @@ DemoRABC 為一套基於 Spring Boot 的權限與功能管理系統，提供角�
 ## 7. 功能需求
 
 ### 7.1 使用者認證
-1. 使用者必須通過表單登入；登入頁顯示帳號、密碼、驗證碼欄位。  
-2. 驗證碼由 `/captcha.jpg` 端點產生，使用者可重整圖片。  
-3. 登入失敗時顯示錯誤訊息，並依原因（帳密錯誤 / 驗證碼錯誤 / 帳號鎖定）區分。  
-4. 同一帳號於 15 分鐘內連續 5 次錯誤登入，顯示帳號鎖定訊息。  
-5. 成功登入後導向 `/`，並將使用者可用功能/群組放入 Session。  
-6. 登出後導回登入頁並顯示「已登出」訊息。
+1. 使用者必須通過表單登入；登入頁顯示帳號、密碼、驗證碼欄位（採全新 UI，CSS 路徑 `/css/login.css`）。  
+2. 驗證碼由 `/captcha.jpg` 端點產生，`CaptchaValidationFilter` 會於登入提交時從 Session 取得並比對；驗證後即移除 Session 中的值以避免重複使用。  
+3. 驗證碼輸入錯誤時立即返回登入頁並顯示專屬錯誤訊息（不計入帳號鎖定次數）。  
+4. 帳號或密碼錯誤時顯示一般錯誤訊息；同一帳號於 15 分鐘內連續 5 次錯誤登入，顯示帳號暫時鎖定訊息。  
+5. 成功登入後導向 `/`，並將使用者可用功能/群組放入 Session（用於側邊欄渲染）。  
+6. 登出後導回登入頁並顯示「已登出」訊息。  
+7. 所有登入、失敗、登出事件皆透過 `ActivityLogService` 寫入 `activity_logs`。
 
 ### 7.2 角色查詢 (`/role-query`)
 - 支援依關鍵字（角色或功能名稱）模糊查詢。  
