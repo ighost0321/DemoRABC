@@ -26,7 +26,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(authz -> authz
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/captcha.jpg").permitAll() // 允許靜態資源與驗證碼
                         .requestMatchers("/login", "/login?error", "/login?logout").permitAll() // 允許登入頁面
                         .anyRequest().authenticated())
