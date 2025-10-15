@@ -4,6 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -14,6 +18,7 @@ import com.ighost.demo.model.FunctionDto;
 import com.ighost.demo.model.RoleDto;
 import com.ighost.demo.repo.FunctionRepository;
 import com.ighost.demo.repo.RoleRepository;
+import com.ighost.demo.repo.spec.RoleSpecification;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,15 +31,18 @@ public class RoleService {
 
     @Transactional(readOnly = true)
     public List<RoleDto> findByKeyword(String keyword, int page, int pageSize) {
-        int offset = (page - 1) * pageSize;
-        return roleRepository.findByKeyword(keyword, offset, pageSize).stream()
+        Specification<Role> specification = RoleSpecification.keywordContains(keyword);
+        Pageable pageable = PageRequest.of(Math.max(page - 1, 0), pageSize, Sort.by("id").ascending());
+
+        return roleRepository.findAll(specification, pageable)
                 .map(this::convertToDto)
-                .toList();
+                .getContent();
     }
 
     @Transactional(readOnly = true)
     public long countByKeyword(String keyword) {
-        return roleRepository.countByKeyword(keyword);
+        Specification<Role> specification = RoleSpecification.keywordContains(keyword);
+        return roleRepository.count(specification);
     }
 
     @Transactional(readOnly = true)
