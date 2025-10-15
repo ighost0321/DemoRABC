@@ -4,14 +4,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,15 +26,12 @@ public class ActivityLogService {
     
     private final ActivityLogRepository activityLogRepository;
     private final ObjectMapper objectMapper;
-    @Lazy
-    @Autowired
-    private ActivityLogService self;
+    private final ActivityLogCommandService activityLogCommandService;
     private static final String HEADER_USER_AGENT = "User-Agent";
     
     /**
      * 記錄使用者活動
      */
-    @Transactional
     public void logActivity(String username, String actionType, String requestUrl, 
                            String requestParameters, String ipAddress, String userAgent) {
         try {
@@ -49,9 +43,7 @@ public class ActivityLogService {
                     .ipAddress(ipAddress)
                     .userAgent(userAgent)
                     .build();
-            
-            activityLogRepository.save(activityLog);
-            log.info("Activity logged: {} - {} - {}", username, actionType, requestUrl);
+            activityLogCommandService.saveLog(activityLog);
         } catch (Exception e) {
             log.error("Failed to log activity: {}", e.getMessage(), e);
         }
@@ -60,7 +52,6 @@ public class ActivityLogService {
     /**
      * 從 HttpServletRequest 記錄活動
      */
-    @Transactional
     public void logActivity(HttpServletRequest request, String actionType) {
         String username = getCurrentUsername();
         String requestUrl = request.getRequestURI();
@@ -68,40 +59,37 @@ public class ActivityLogService {
         String ipAddress = getClientIpAddress(request);
         String userAgent = request.getHeader(HEADER_USER_AGENT);
         
-        self.logActivity(username, actionType, requestUrl, requestParameters, ipAddress, userAgent);
+        logActivity(username, actionType, requestUrl, requestParameters, ipAddress, userAgent);
     }
     
     /**
      * 記錄登入成功
      */
-    @Transactional
     public void logLoginSuccess(String username, HttpServletRequest request) {
         String ipAddress = getClientIpAddress(request);
         String userAgent = request.getHeader(HEADER_USER_AGENT);
         
-        self.logActivity(username, ActivityLog.LOGIN_SUCCESS, "/login", null, ipAddress, userAgent);
+        logActivity(username, ActivityLog.LOGIN_SUCCESS, "/login", null, ipAddress, userAgent);
     }
     
     /**
      * 記錄登入失敗
      */
-    @Transactional
     public void logLoginFailure(String username, HttpServletRequest request) {
         String ipAddress = getClientIpAddress(request);
         String userAgent = request.getHeader(HEADER_USER_AGENT);
         
-        self.logActivity(username, ActivityLog.LOGIN_FAIL, "/login", null, ipAddress, userAgent);
+        logActivity(username, ActivityLog.LOGIN_FAIL, "/login", null, ipAddress, userAgent);
     }
     
     /**
      * 記錄登出
      */
-    @Transactional
     public void logLogout(String username, HttpServletRequest request) {
         String ipAddress = getClientIpAddress(request);
         String userAgent = request.getHeader(HEADER_USER_AGENT);
         
-        self.logActivity(username, ActivityLog.LOGOUT, "/logout", null, ipAddress, userAgent);
+        logActivity(username, ActivityLog.LOGOUT, "/logout", null, ipAddress, userAgent);
     }
     
     /**
@@ -129,11 +117,8 @@ public class ActivityLogService {
     /**
      * 清理舊記錄
      */
-    @Transactional
     public void cleanupOldLogs(int daysToKeep) {
-        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysToKeep);
-        activityLogRepository.deleteByCreatedAtBefore(cutoffDate);
-        log.info("Cleaned up activity logs older than {} days", daysToKeep);
+        activityLogCommandService.cleanupOldLogs(daysToKeep);
     }
     /**
      * 取得今日活躍使用者數量
